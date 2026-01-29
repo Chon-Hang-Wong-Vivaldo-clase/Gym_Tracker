@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:gym_tracker_app/widgets/week_swiper.dart';
+import 'package:gym_tracker_app/widgets/streak_water_ring.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -6,115 +8,51 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
+      appBar:
+        AppBar(
+          actions: [
+            Padding(
+              padding: EdgeInsetsGeometry.fromLTRB(0, 0, 15, 0),
+              child:IconButton(onPressed: (){}, icon: Icon(Icons.menu)),
+            )
+          ],
+        ),
+      body: 
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Zona central (título + subtítulo)
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text(
-                      "Gym Tracker",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-                    Text(
-                      "Entrena hoy, supérate mañana",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
+            Padding(
+              padding: EdgeInsetsGeometry.fromLTRB(25, 0, 0, 10),
+              child: 
+                Text("¡Buenos días!", style: TextStyle(fontSize: 22),)
+              ),
+            WeekSwiper(
+              onDateSelected: (date) {
+                print(date);
+              },
+            ),
+            Padding(padding: EdgeInsetsGeometry.fromLTRB(0, 40, 0, 35),
+            child: 
+              Center(
+                child: StreakWaterRing(
+                  streakDays: 140,
+                  goalDays: 30,
+                  size: 260,
                 ),
               ),
             ),
-
-            // Botones abajo
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Column(
-                children: [
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: ir a Login
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8A8F98),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        "Continue with Google",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: iniciar con Google
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2B2E34),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: ir a login
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8A8F98),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        "Sign up",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+            Center(
+              child: 
+                Text("Seguimiento mensual", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
             ),
+            Divider(
+              height: 30,
+              endIndent: 30,
+              indent: 30,
+            ),
+
           ],
-        ),
-      ),
+        )
     );
   }
 }
