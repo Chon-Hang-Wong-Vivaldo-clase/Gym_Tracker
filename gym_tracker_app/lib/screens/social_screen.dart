@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class ThemeProvider extends StatelessWidget {
-  const ThemeProvider({super.key});
+class SocialScreen extends StatelessWidget {
+  const SocialScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

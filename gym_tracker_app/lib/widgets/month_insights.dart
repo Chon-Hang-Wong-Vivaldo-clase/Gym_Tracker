@@ -1,14 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MonthInsights extends StatefulWidget {
-  const MonthInsights({
-    super.key
-    this.trainedDays
-    this.restDays
-  });
-
-  final int trainedDays;
-  final int restDays;
+  const MonthInsights({super.key});
 
   @override
   State<MonthInsights> createState() => _MonthInsightsState();
@@ -19,5 +12,4 @@ class _MonthInsightsState extends State<MonthInsights> {
   Widget build(BuildContext context) {
     return Container();
   }
-
 }

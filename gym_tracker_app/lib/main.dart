@@ -1,41 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:gym_tracker_app/providers/streak_provider.dart';
-import 'package:gym_tracker_app/providers/theme_provider.dart';
 import 'package:provider/provider.dart';
+
+import 'package:gym_tracker_app/widgets/widgets.dart';
 import 'screens/screens.dart';
+
 void main() => runApp(AppState());
 
-class AppState extends StatelessWidget{
+class AppState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => StreakProvider(),
-          lazy: false,
-        ),
-        ChangeNotifierProvider(
-          create: (_) => ThemeProvider())
+        ChangeNotifierProvider(create: (_) => StreakProvider(), lazy: false),
       ],
-      child: MainApp(),
+      child: const MainApp(),
     );
   }
 }
 
 class MainApp extends StatelessWidget {
-  
   const MainApp({super.key});
-  //isUserLogged = "Añadir instancia de FireBaseAuth.currentUser"
-  //if initialRoute : "home" ? "login"
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "GymTracker",
-      //theme: ThemeData.dark, //add function to change theme in settings
-      initialRoute: 'home',
+      initialRoute: 'shell',
       routes: {
+        'shell': (_) => const AppShell(),
+        // si quieres rutas normales extra:
         'home': (_) => const HomeScreen(),
       },
     );
