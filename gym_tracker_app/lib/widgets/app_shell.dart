@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
-import 'package:gym_tracker_app/screens/screens.dart'; // HomeScreen, ProfileScreen, SocialScreen...
+import 'package:gym_tracker_app/screens/screens.dart'; 
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -53,12 +53,12 @@ class _AppShellState extends State<AppShell> {
       controller: _controller,
       screens: _screens(),
       items: _items(),
-      navBarStyle: NavBarStyle.style6,
+      navBarStyle: NavBarStyle.style10,
       backgroundColor: Colors.white,
       confineToSafeArea: true,
       hideNavigationBarWhenKeyboardAppears: true,
       handleAndroidBackButtonPress: true,
-      stateManagement: false, // tú usas Provider
+      stateManagement: false,
     );
   }
 }
