@@ -1,5 +1,14 @@
 export 'package:gym_tracker_app/screens/home_screen.dart';
 export 'package:gym_tracker_app/screens/login_screen.dart';
-export 'package:gym_tracker_app/screens/register_screen.dart';
+export 'package:gym_tracker_app/screens/register_profile_screen.dart';
+export 'package:gym_tracker_app/screens/complete_profile_screen.dart';
 export 'package:gym_tracker_app/screens/profile_screen.dart';
 export 'package:gym_tracker_app/screens/social_screen.dart';
+export 'package:gym_tracker_app/screens/register_email_screen.dart';
+export 'package:gym_tracker_app/screens/routines_screen.dart';
+export 'package:gym_tracker_app/screens/create_routine_screen.dart';
+export 'package:gym_tracker_app/screens/premium_info_screen.dart';
+export 'package:gym_tracker_app/screens/goals_screen.dart';
+export 'package:gym_tracker_app/screens/edit_profile_screen.dart';
+export 'package:gym_tracker_app/screens/terms_conditions_screen.dart';
+export 'package:gym_tracker_app/screens/social_user_profile_screen.dart';

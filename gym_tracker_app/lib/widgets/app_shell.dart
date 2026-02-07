@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent_bottom_nav_bar.dart';
 
-import 'package:gym_tracker_app/screens/screens.dart'; 
+import 'package:gym_tracker_app/screens/screens.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -28,7 +28,7 @@ class _AppShellState extends State<AppShell> {
   List<PersistentBottomNavBarItem> _items() => [
     PersistentBottomNavBarItem(
       icon: const Icon(Icons.home),
-      title: "Home",
+      title: "Inicio",
       activeColorPrimary: const Color(0xFF2B2E34),
       inactiveColorPrimary: Colors.grey,
     ),
@@ -53,7 +53,7 @@ class _AppShellState extends State<AppShell> {
       controller: _controller,
       screens: _screens(),
       items: _items(),
-      navBarStyle: NavBarStyle.style10,
+      navBarStyle: NavBarStyle.style14,
       backgroundColor: Colors.white,
       confineToSafeArea: true,
       hideNavigationBarWhenKeyboardAppears: true,

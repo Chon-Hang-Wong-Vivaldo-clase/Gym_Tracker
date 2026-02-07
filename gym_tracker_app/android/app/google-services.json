@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "759625472979",
+    "firebase_url": "https://gymtracker-5404c-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "gymtracker-5404c",
+    "storage_bucket": "gymtracker-5404c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:759625472979:android:cf3840892bbc8e8c712d26",
+        "android_client_info": {
+          "package_name": "com.example.gym_tracker_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "759625472979-u23ffd07mm9olv6svfvi9rr10q16vccf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDeI5-_eT6r7AaVRJPZvlEKN521H0x-yRk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "759625472979-u23ffd07mm9olv6svfvi9rr10q16vccf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
