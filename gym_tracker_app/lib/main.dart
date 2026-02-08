@@ -9,10 +9,9 @@ import 'package:gym_tracker_app/providers/streak_provider.dart';
 import 'package:gym_tracker_app/providers/app_auth_provider.dart';
 import 'package:gym_tracker_app/providers/auth_form_provider.dart';
 
-import 'package:gym_tracker_app/widgets/widgets.dart'; // AppShell, AuthGate si lo metes ahí
-import 'screens/screens.dart'; // LoginScreen, etc.
+import 'package:gym_tracker_app/widgets/widgets.dart';
+import 'screens/screens.dart';
 
-// IMPORTANTE: main async + initialize
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 import 'package:gym_tracker_app/screens/premium_info_screen.dart';
@@ -10,6 +12,14 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    final statsRef = user == null
+        ? null
+        : FirebaseDatabase.instance.ref('users/${user.uid}/stats');
+    final profileRef = user == null
+        ? null
+        : FirebaseDatabase.instance.ref('users/${user.uid}/profile');
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -27,34 +37,11 @@ class ProfileScreen extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         child: Column(
           children: [
-            const _ProfileAvatar(),
+            _ProfileHeader(profileRef: profileRef),
             const SizedBox(height: 10),
-            const Text(
-              "Nombre",
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-            ),
+            _ProfileName(profileRef: profileRef),
             const SizedBox(height: 18),
-            Row(
-              children: const [
-                Expanded(
-                  child: _StatCard(
-                    title: "Entrenado",
-                    value: "18",
-                    unit: "días",
-                    icon: Icons.fitness_center,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _StatCard(
-                    title: "Descanso",
-                    value: "4",
-                    unit: "días",
-                    icon: Icons.nightlight_round,
-                  ),
-                ),
-              ],
-            ),
+            _StatsRow(statsRef: statsRef),
             const SizedBox(height: 22),
             const Align(
               alignment: Alignment.centerLeft,
@@ -122,7 +109,9 @@ class ProfileScreen extends StatelessWidget {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar();
+  const _ProfileAvatar({required this.photoUrl});
+
+  final String? photoUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +122,143 @@ class _ProfileAvatar extends StatelessWidget {
         color: Color(0xFFE0E0E0),
         shape: BoxShape.circle,
       ),
-      child: const Icon(Icons.person, size: 44, color: Colors.black54),
+      child: photoUrl == null
+          ? const Icon(Icons.person, size: 44, color: Colors.black54)
+          : ClipOval(
+              child: Image.network(
+                photoUrl!,
+                width: 92,
+                height: 92,
+                fit: BoxFit.cover,
+              ),
+            ),
+    );
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({required this.profileRef});
+
+  final DatabaseReference? profileRef;
+
+  @override
+  Widget build(BuildContext context) {
+    if (profileRef == null) {
+      return const _ProfileAvatar(photoUrl: null);
+    }
+
+    return StreamBuilder<DatabaseEvent>(
+      stream: profileRef!.onValue,
+      builder: (context, snapshot) {
+        final raw = snapshot.data?.snapshot.value;
+        final data = raw is Map ? raw : <dynamic, dynamic>{};
+        final photoUrl = data['photoUrl']?.toString();
+        return _ProfileAvatar(photoUrl: photoUrl);
+      },
+    );
+  }
+}
+
+class _ProfileName extends StatelessWidget {
+  const _ProfileName({required this.profileRef, this.fallback});
+
+  final DatabaseReference? profileRef;
+  final String? fallback;
+
+  @override
+  Widget build(BuildContext context) {
+    if (profileRef == null) {
+      return Text(
+        fallback ?? "Usuario",
+        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+      );
+    }
+
+    return StreamBuilder<DatabaseEvent>(
+      stream: profileRef!.onValue,
+      builder: (context, snapshot) {
+        final raw = snapshot.data?.snapshot.value;
+        final data = raw is Map ? raw : <dynamic, dynamic>{};
+        final name = (data['name'] ?? '').toString();
+        final surname = (data['surname'] ?? '').toString();
+        final displayName = [name, surname]
+            .where((value) => value.trim().isNotEmpty)
+            .join(' ')
+            .trim();
+
+        return Text(
+          displayName.isEmpty ? (fallback ?? "Usuario") : displayName,
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        );
+      },
+    );
+  }
+}
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({required this.statsRef});
+
+  final DatabaseReference? statsRef;
+
+  @override
+  Widget build(BuildContext context) {
+    if (statsRef == null) {
+      return Row(
+        children: const [
+          Expanded(
+            child: _StatCard(
+              title: "Entrenado",
+              value: "0",
+              unit: "días",
+              icon: Icons.fitness_center,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: _StatCard(
+              title: "Descanso",
+              value: "0",
+              unit: "días",
+              icon: Icons.nightlight_round,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return StreamBuilder<DatabaseEvent>(
+      stream: statsRef!.onValue,
+      builder: (context, snapshot) {
+        final data = snapshot.data?.snapshot.value as Map? ?? {};
+        final trained = (data['trainedDaysCount'] is num)
+            ? (data['trainedDaysCount'] as num).toInt()
+            : 0;
+        final rest = (data['restDaysCount'] is num)
+            ? (data['restDaysCount'] as num).toInt()
+            : 0;
+
+        return Row(
+          children: [
+            Expanded(
+              child: _StatCard(
+                title: "Entrenado",
+                value: trained.toString(),
+                unit: "días",
+                icon: Icons.fitness_center,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatCard(
+                title: "Descanso",
+                value: rest.toString(),
+                unit: "días",
+                icon: Icons.nightlight_round,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

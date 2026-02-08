@@ -1,18 +1,76 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
-class SocialUserProfileScreen extends StatelessWidget {
+class SocialUserProfileScreen extends StatefulWidget {
   const SocialUserProfileScreen({
     super.key,
+    required this.userId,
     required this.username,
     required this.trainedDays,
     required this.restDays,
     required this.routines,
   });
 
+  final String userId;
   final String username;
   final int trainedDays;
   final int restDays;
   final List<SocialRoutine> routines;
+
+  @override
+  State<SocialUserProfileScreen> createState() => _SocialUserProfileScreenState();
+}
+
+class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
+  bool _loading = false;
+  bool _isFollowing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFollowing();
+  }
+
+  Future<void> _loadFollowing() async {
+    final current = FirebaseAuth.instance.currentUser;
+    if (current == null) return;
+    final ref = FirebaseDatabase.instance
+        .ref('users/${current.uid}/following/${widget.userId}');
+    final snap = await ref.get();
+    if (!mounted) return;
+    setState(() {
+      _isFollowing = snap.value == true;
+    });
+  }
+
+  Future<void> _toggleFollow() async {
+    if (_loading) return;
+    final current = FirebaseAuth.instance.currentUser;
+    if (current == null) {
+      return;
+    }
+    setState(() => _loading = true);
+
+    try {
+      final root = FirebaseDatabase.instance.ref();
+      final updates = <String, Object?>{
+        'users/${current.uid}/following/${widget.userId}':
+            _isFollowing ? null : true,
+        'users/${widget.userId}/followers/${current.uid}':
+            _isFollowing ? null : true,
+      };
+      await root.update(updates);
+      if (!mounted) return;
+      setState(() {
+        _isFollowing = !_isFollowing;
+      });
+    } catch (e) {
+      if (!mounted) return;
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +97,7 @@ class SocialUserProfileScreen extends StatelessWidget {
           const SizedBox(height: 10),
           Center(
             child: Text(
-              username,
+              widget.username,
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
             ),
           ),
@@ -54,12 +112,17 @@ class SocialUserProfileScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
               ),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Seguido.")),
-                );
-              },
-              child: const Text("SEGUIR"),
+              onPressed: _loading ? null : _toggleFollow,
+              child: _loading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(_isFollowing ? "SIGUIENDO" : "SEGUIR"),
             ),
           ),
           const SizedBox(height: 14),
@@ -68,7 +131,7 @@ class SocialUserProfileScreen extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   title: "Entrenado",
-                  value: "$trainedDays",
+                  value: "${widget.trainedDays}",
                   unit: "días",
                   icon: Icons.fitness_center,
                 ),
@@ -77,7 +140,7 @@ class SocialUserProfileScreen extends StatelessWidget {
               Expanded(
                 child: _StatCard(
                   title: "Descanso",
-                  value: "$restDays",
+                  value: "${widget.restDays}",
                   unit: "días",
                   icon: Icons.nightlight_round,
                 ),
@@ -97,7 +160,7 @@ class SocialUserProfileScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
-              children: routines
+              children: widget.routines
                   .map((routine) => _RoutineCard(routine: routine))
                   .toList(),
             ),

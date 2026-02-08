@@ -53,6 +53,12 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
         child: Column(
           children: [
             TextField(
+              controller: form.usernameCtrl,
+              decoration: const InputDecoration(hintText: "@usuario"),
+              onChanged: (_) => form.clearError(),
+            ),
+            const SizedBox(height: 14),
+            TextField(
               controller: form.nameCtrl,
               decoration: const InputDecoration(hintText: "Nombre"),
               onChanged: (_) => form.clearError(),

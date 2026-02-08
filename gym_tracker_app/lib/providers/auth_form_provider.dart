@@ -12,6 +12,7 @@ class AuthFormProvider extends ChangeNotifier {
   final nameCtrl = TextEditingController();
   final surnameCtrl = TextEditingController();
   final bioCtrl = TextEditingController();
+  final usernameCtrl = TextEditingController();
 
   bool loading = false;
   String? error;
@@ -33,6 +34,7 @@ class AuthFormProvider extends ChangeNotifier {
 
   Future<void> _writeUserData({
     required User user,
+    required String username,
     required String name,
     required String surname,
     required String bio,
@@ -42,13 +44,14 @@ class AuthFormProvider extends ChangeNotifier {
 
     final updates = <String, Object?>{
       'users/${user.uid}/profile': {
+        "username": username,
         "name": name,
         "surname": surname,
         "bio": bio,
         "email": safeEmail,
         "photoUrl": user.photoURL,
         "isAdmin": false,
-        "premium": false,
+        "isPremium": false,
         "createdAt": ServerValue.timestamp,
       },
     };
@@ -56,9 +59,29 @@ class AuthFormProvider extends ChangeNotifier {
   }
 
   bool _validateProfileFields() {
+    final normalizedUsername = _normalizeUsername(usernameCtrl.text);
     final name = nameCtrl.text.trim();
     final surname = surnameCtrl.text.trim();
     final bio = bioCtrl.text.trim();
+
+    if (normalizedUsername.isEmpty) {
+      error = "El nombre de usuario es obligatorio";
+      notifyListeners();
+      return false;
+    }
+    if (normalizedUsername.length < 3) {
+      error = "El nombre de usuario es demasiado corto";
+      notifyListeners();
+      return false;
+    }
+    if (normalizedUsername.contains(' ')) {
+      error = "El nombre de usuario no puede tener espacios";
+      notifyListeners();
+      return false;
+    }
+    if (usernameCtrl.text.trim() != normalizedUsername) {
+      usernameCtrl.text = normalizedUsername;
+    }
 
     if (name.isEmpty || surname.isEmpty) {
       error = "Nombre y apellidos son obligatorios";
@@ -141,6 +164,7 @@ class AuthFormProvider extends ChangeNotifier {
       final user = cred.user!;
       await _writeUserData(
         user: user,
+        username: _normalizeUsername(usernameCtrl.text),
         name: nameCtrl.text.trim(),
         surname: surnameCtrl.text.trim(),
         bio: bioCtrl.text.trim(),
@@ -175,6 +199,7 @@ class AuthFormProvider extends ChangeNotifier {
     try {
       await _writeUserData(
         user: user,
+        username: _normalizeUsername(usernameCtrl.text),
         name: nameCtrl.text.trim(),
         surname: surnameCtrl.text.trim(),
         bio: bioCtrl.text.trim(),
@@ -197,6 +222,14 @@ class AuthFormProvider extends ChangeNotifier {
     nameCtrl.dispose();
     surnameCtrl.dispose();
     bioCtrl.dispose();
+    usernameCtrl.dispose();
     super.dispose();
+  }
+
+  String _normalizeUsername(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return '';
+    final withAt = trimmed.startsWith('@') ? trimmed : '@$trimmed';
+    return withAt.toLowerCase();
   }
 }
