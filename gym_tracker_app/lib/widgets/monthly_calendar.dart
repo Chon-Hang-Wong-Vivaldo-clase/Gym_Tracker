@@ -74,9 +74,12 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: const [
               _LegendItem(color: _todayColor, label: "Hoy"),
-              _LegendItem(color: _plannedColor, label: "Entrenamientos"),
               _LegendItem(color: _streakColor, label: "Racha"),
-              _LegendItem(color: Colors.white, label: "Descanso", outline: true),
+              _LegendItem(
+                color: Colors.white,
+                label: "Descanso",
+                outline: true,
+              ),
             ],
           ),
         ],
@@ -111,10 +114,7 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
         width: 34,
         height: 34,
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: background,
-          shape: BoxShape.circle,
-        ),
+        decoration: BoxDecoration(color: background, shape: BoxShape.circle),
         child: Text(
           '${day.day}',
           style: TextStyle(

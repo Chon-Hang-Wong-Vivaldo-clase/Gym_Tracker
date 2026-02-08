@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:gym_tracker_app/screens/routine_detail_screen.dart';
 import 'package:gym_tracker_app/screens/social_user_profile_screen.dart';
 import 'package:gym_tracker_app/services/routine_like_service.dart';
+import 'package:gym_tracker_app/widgets/widgets.dart';
 
 class SocialScreen extends StatelessWidget {
   const SocialScreen({super.key});
@@ -19,6 +20,7 @@ class SocialScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      endDrawer: const AppEndDrawer(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
@@ -29,9 +31,14 @@ class SocialScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add),
-            onPressed: () => _openSearch(context),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 15, 0),
+            child: Builder(
+              builder: (context) => IconButton(
+                onPressed: () => Scaffold.of(context).openEndDrawer(),
+                icon: const Icon(Icons.menu),
+              ),
+            ),
           ),
         ],
       ),

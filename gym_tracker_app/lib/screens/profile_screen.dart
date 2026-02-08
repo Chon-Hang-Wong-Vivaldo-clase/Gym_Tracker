@@ -6,6 +6,7 @@ import 'package:gym_tracker_app/screens/premium_info_screen.dart';
 import 'package:gym_tracker_app/screens/goals_screen.dart';
 import 'package:gym_tracker_app/screens/edit_profile_screen.dart';
 import 'package:gym_tracker_app/screens/terms_conditions_screen.dart';
+import 'package:gym_tracker_app/widgets/widgets.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -22,6 +23,7 @@ class ProfileScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      endDrawer: const AppEndDrawer(),
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
@@ -31,7 +33,17 @@ class ProfileScreen extends StatelessWidget {
           "Perfil",
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
-        actions: [IconButton(onPressed: () {}, icon: const Icon(Icons.menu))],
+        actions: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 15, 0),
+            child: Builder(
+              builder: (context) => IconButton(
+                onPressed: () => Scaffold.of(context).openEndDrawer(),
+                icon: const Icon(Icons.menu),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -181,10 +193,10 @@ class _ProfileName extends StatelessWidget {
         final data = raw is Map ? raw : <dynamic, dynamic>{};
         final name = (data['name'] ?? '').toString();
         final surname = (data['surname'] ?? '').toString();
-        final displayName = [name, surname]
-            .where((value) => value.trim().isNotEmpty)
-            .join(' ')
-            .trim();
+        final displayName = [
+          name,
+          surname,
+        ].where((value) => value.trim().isNotEmpty).join(' ').trim();
 
         return Text(
           displayName.isEmpty ? (fallback ?? "Usuario") : displayName,

@@ -17,3 +17,4 @@ export 'package:gym_tracker_app/screens/routine_detail_screen.dart';
 export 'package:gym_tracker_app/screens/training_session_start_screen.dart';
 export 'package:gym_tracker_app/screens/training_session_screen.dart';
 export 'package:gym_tracker_app/screens/training_summary_screen.dart';
+export 'package:gym_tracker_app/screens/training_history_screen.dart';
