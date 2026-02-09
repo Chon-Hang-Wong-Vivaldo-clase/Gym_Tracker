@@ -97,6 +97,27 @@ class AuthFormProvider extends ChangeNotifier {
     return true;
   }
 
+  Future<bool> _isUsernameAvailable(String username,
+      {String? currentUid}) async {
+    final normalized = _normalizeUsername(username);
+    if (normalized.isEmpty) return false;
+    final snap = await FirebaseDatabase.instance
+        .ref('users')
+        .orderByChild('profile/username')
+        .equalTo(normalized)
+        .get();
+    if (!snap.exists) return true;
+    final raw = snap.value;
+    if (raw is! Map) return true;
+    if (currentUid == null) return false;
+    for (final entry in raw.entries) {
+      if (entry.key.toString() != currentUid) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   // LOGIN email
   Future<String> loginEmail(AppAuthProvider auth) async {
     _setLoading(true);
@@ -156,6 +177,13 @@ class AuthFormProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
+      final username = _normalizeUsername(usernameCtrl.text);
+      final available = await _isUsernameAvailable(username);
+      if (!available) {
+        error = "El nombre de usuario ya está en uso";
+        notifyListeners();
+        return false;
+      }
       final cred = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailCtrl.text.trim(),
         password: passCtrl.text,
@@ -164,7 +192,7 @@ class AuthFormProvider extends ChangeNotifier {
       final user = cred.user!;
       await _writeUserData(
         user: user,
-        username: _normalizeUsername(usernameCtrl.text),
+        username: username,
         name: nameCtrl.text.trim(),
         surname: surnameCtrl.text.trim(),
         bio: bioCtrl.text.trim(),
@@ -197,9 +225,17 @@ class AuthFormProvider extends ChangeNotifier {
 
     _setLoading(true);
     try {
+      final username = _normalizeUsername(usernameCtrl.text);
+      final available =
+          await _isUsernameAvailable(username, currentUid: user.uid);
+      if (!available) {
+        error = "El nombre de usuario ya está en uso";
+        notifyListeners();
+        return false;
+      }
       await _writeUserData(
         user: user,
-        username: _normalizeUsername(usernameCtrl.text),
+        username: username,
         name: nameCtrl.text.trim(),
         surname: surnameCtrl.text.trim(),
         bio: bioCtrl.text.trim(),

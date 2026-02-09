@@ -5,6 +5,7 @@ export 'package:gym_tracker_app/screens/complete_profile_screen.dart';
 export 'package:gym_tracker_app/screens/profile_screen.dart';
 export 'package:gym_tracker_app/screens/social_screen.dart';
 export 'package:gym_tracker_app/screens/register_email_screen.dart';
+export 'package:gym_tracker_app/screens/password_login_screen.dart';
 export 'package:gym_tracker_app/screens/routines_screen.dart';
 export 'package:gym_tracker_app/screens/create_routine_screen.dart';
 export 'package:gym_tracker_app/screens/exercise_picker_screen.dart';

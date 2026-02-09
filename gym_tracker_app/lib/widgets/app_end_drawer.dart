@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'package:gym_tracker_app/providers/app_auth_provider.dart';
 import 'package:gym_tracker_app/screens/training_history_screen.dart';
+import 'package:gym_tracker_app/widgets/auth_gate.dart';
 
 class AppEndDrawer extends StatefulWidget {
   const AppEndDrawer({super.key});
@@ -26,6 +27,9 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
     final settingsRef = uid == null
         ? null
         : FirebaseDatabase.instance.ref('users/$uid/settings');
+    final presenceRef = uid == null
+        ? null
+        : FirebaseDatabase.instance.ref('users/$uid/presence');
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.78,
@@ -42,6 +46,7 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
               ),
               const SizedBox(height: 8),
               _ProfileHeader(userEmail: user?.email, profileRef: profileRef),
+              _PresenceStatus(presenceRef: presenceRef),
               const SizedBox(height: 18),
               _SettingsSwitch(
                 label: "Activo",
@@ -101,6 +106,13 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
               _LogoutButton(
                 onPressed: () async {
                   await context.read<AppAuthProvider>().signOut();
+                  if (!context.mounted) return;
+                  Navigator.of(context).maybePop();
+                  Navigator.of(context, rootNavigator: true)
+                      .pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const AuthGate()),
+                        (_) => false,
+                      );
                 },
               ),
             ],
@@ -196,6 +208,55 @@ class _ProfileContent extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PresenceStatus extends StatelessWidget {
+  const _PresenceStatus({required this.presenceRef});
+
+  final DatabaseReference? presenceRef;
+
+  @override
+  Widget build(BuildContext context) {
+    if (presenceRef == null) {
+      return const Padding(
+        padding: EdgeInsets.only(top: 6),
+        child: Text(
+          "Estado: Desconectado",
+          style: TextStyle(color: Colors.black54, fontSize: 12),
+        ),
+      );
+    }
+
+    return StreamBuilder<DatabaseEvent>(
+      stream: presenceRef!.onValue,
+      builder: (context, snapshot) {
+        final raw = snapshot.data?.snapshot.value;
+        final data = raw is Map ? raw : <dynamic, dynamic>{};
+        final state = data['state']?.toString() ?? 'offline';
+        final online = state == 'online';
+        return Padding(
+          padding: const EdgeInsets.only(top: 6),
+          child: Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: online ? const Color(0xFF2E7D32) : Colors.grey,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                online ? "Estado: Conectado" : "Estado: Desconectado",
+                style: const TextStyle(color: Colors.black54, fontSize: 12),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

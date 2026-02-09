@@ -354,13 +354,14 @@ class _FollowingTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final userRef = FirebaseDatabase.instance.ref('users/$userId');
 
-    return FutureBuilder<DatabaseEvent>(
-      future: userRef.once(),
+    return StreamBuilder<DatabaseEvent>(
+      stream: userRef.onValue,
       builder: (context, snapshot) {
         final raw = snapshot.data?.snapshot.value;
         final data = raw is Map ? raw : <dynamic, dynamic>{};
         final profile = data['profile'] as Map? ?? {};
         final stats = data['stats'] as Map? ?? {};
+        final presence = data['presence'] as Map? ?? {};
         final username = profile['username']?.toString() ?? '@usuario';
         final trained = (stats['trainedDaysCount'] is num)
             ? (stats['trainedDaysCount'] as num).toInt()
@@ -368,12 +369,14 @@ class _FollowingTile extends StatelessWidget {
         final rest = (stats['restDaysCount'] is num)
             ? (stats['restDaysCount'] as num).toInt()
             : 0;
+        final state = presence['state']?.toString() ?? 'offline';
+        final isOnline = state == 'online';
 
         return _FriendTile(
           friend: _Friend(
             userId: userId,
             username: username,
-            isOnline: false,
+            isOnline: isOnline,
             trainedDays: trained,
             restDays: rest,
           ),

@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "759625472979-co1087akgn1b3f3lfstjepsuoqrprc4g.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.gym_tracker_app",
+            "certificate_hash": "33fe99a00b3b4d2d95d64b407aec6b63fd20250b"
+          }
+        },
+        {
           "client_id": "759625472979-u23ffd07mm9olv6svfvi9rr10q16vccf.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -30,6 +38,13 @@
             {
               "client_id": "759625472979-u23ffd07mm9olv6svfvi9rr10q16vccf.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "759625472979-jsj1m5pnhqbmthmoar68sklihr1bsq46.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.gymTrackerApp"
+              }
             }
           ]
         }
