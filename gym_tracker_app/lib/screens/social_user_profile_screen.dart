@@ -7,6 +7,7 @@ class SocialUserProfileScreen extends StatefulWidget {
     super.key,
     required this.userId,
     required this.username,
+    required this.photoUrl,
     required this.trainedDays,
     required this.restDays,
     required this.routines,
@@ -14,6 +15,7 @@ class SocialUserProfileScreen extends StatefulWidget {
 
   final String userId;
   final String username;
+  final String? photoUrl;
   final int trainedDays;
   final int restDays;
   final List<SocialRoutine> routines;
@@ -93,7 +95,7 @@ class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
         children: [
-          const _ProfileAvatar(),
+          _ProfileAvatar(photoUrl: widget.photoUrl),
           const SizedBox(height: 10),
           Center(
             child: Text(
@@ -172,7 +174,9 @@ class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar();
+  const _ProfileAvatar({required this.photoUrl});
+
+  final String? photoUrl;
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +188,16 @@ class _ProfileAvatar extends StatelessWidget {
           color: Color(0xFFE0E0E0),
           shape: BoxShape.circle,
         ),
-        child: const Icon(Icons.person, size: 44, color: Colors.black54),
+        child: photoUrl == null
+            ? const Icon(Icons.person, size: 44, color: Colors.black54)
+            : ClipOval(
+                child: Image.network(
+                  photoUrl!,
+                  width: 92,
+                  height: 92,
+                  fit: BoxFit.cover,
+                ),
+              ),
       ),
     );
   }

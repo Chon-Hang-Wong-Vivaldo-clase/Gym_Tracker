@@ -197,6 +197,7 @@ class SocialScreen extends StatelessWidget {
               final profile = data['profile'] as Map? ?? {};
               final stats = data['stats'] as Map? ?? {};
               final display = profile['username']?.toString() ?? username;
+              final photoUrl = profile['photoUrl']?.toString();
               final trained = (stats['trainedDaysCount'] is num)
                   ? (stats['trainedDaysCount'] as num).toInt()
                   : 0;
@@ -211,6 +212,7 @@ class SocialScreen extends StatelessWidget {
                   builder: (_) => SocialUserProfileScreen(
                     userId: targetUid,
                     username: display,
+                    photoUrl: photoUrl,
                     trainedDays: trained,
                     restDays: rest,
                     routines: const [],
@@ -230,6 +232,7 @@ class _Friend {
   const _Friend({
     required this.userId,
     required this.username,
+    required this.photoUrl,
     required this.isOnline,
     required this.trainedDays,
     required this.restDays,
@@ -237,6 +240,7 @@ class _Friend {
 
   final String userId;
   final String username;
+  final String? photoUrl;
   final bool isOnline;
   final int trainedDays;
   final int restDays;
@@ -262,10 +266,19 @@ class _FriendTile extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 18,
-                    backgroundColor: Color(0xFFD9D9D9),
-                    child: Icon(Icons.person, color: Colors.black54, size: 18),
+                    backgroundColor: const Color(0xFFD9D9D9),
+                    backgroundImage: friend.photoUrl == null
+                        ? null
+                        : NetworkImage(friend.photoUrl!),
+                    child: friend.photoUrl == null
+                        ? const Icon(
+                            Icons.person,
+                            color: Colors.black54,
+                            size: 18,
+                          )
+                        : null,
                   ),
                   if (friend.isOnline)
                     Positioned(
@@ -363,6 +376,7 @@ class _FollowingTile extends StatelessWidget {
         final stats = data['stats'] as Map? ?? {};
         final presence = data['presence'] as Map? ?? {};
         final username = profile['username']?.toString() ?? '@usuario';
+        final photoUrl = profile['photoUrl']?.toString();
         final trained = (stats['trainedDaysCount'] is num)
             ? (stats['trainedDaysCount'] as num).toInt()
             : 0;
@@ -376,6 +390,7 @@ class _FollowingTile extends StatelessWidget {
           friend: _Friend(
             userId: userId,
             username: username,
+            photoUrl: photoUrl,
             isOnline: isOnline,
             trainedDays: trained,
             restDays: rest,
@@ -386,6 +401,7 @@ class _FollowingTile extends StatelessWidget {
                 builder: (_) => SocialUserProfileScreen(
                   userId: userId,
                   username: username,
+                  photoUrl: photoUrl,
                   trainedDays: trained,
                   restDays: rest,
                   routines: const [],
