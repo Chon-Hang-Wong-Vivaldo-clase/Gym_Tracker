@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>759625472979-jsj1m5pnhqbmthmoar68sklihr1bsq46.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.759625472979-jsj1m5pnhqbmthmoar68sklihr1bsq46</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>759625472979-co1087akgn1b3f3lfstjepsuoqrprc4g.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBZdZ0AJBV-fQFwvWqItYbCTd9hjtz-T5c</string>
+	<key>GCM_SENDER_ID</key>
+	<string>759625472979</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.gymTrackerApp</string>
+	<key>PROJECT_ID</key>
+	<string>gymtracker-5404c</string>
+	<key>STORAGE_BUCKET</key>
+	<string>gymtracker-5404c.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:759625472979:ios:7097d64d3fc6273a712d26</string>
+	<key>DATABASE_URL</key>
+	<string>https://gymtracker-5404c-default-rtdb.europe-west1.firebasedatabase.app</string>
+</dict>
+</plist>

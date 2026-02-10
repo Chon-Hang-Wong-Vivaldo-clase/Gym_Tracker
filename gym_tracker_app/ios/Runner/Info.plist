@@ -8,6 +8,15 @@
 	<string>Gym Tracker App</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+	  <dict>
+	    <key>CFBundleURLSchemes</key>
+	    <array>
+	      <string>com.googleusercontent.apps.759625472979-jsj1m5pnhqbmthmoar68sklihr1bsq46</string>
+	    </array>
+	  </dict>
+	</array>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>

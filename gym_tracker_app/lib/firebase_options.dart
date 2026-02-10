@@ -65,7 +65,9 @@ class DefaultFirebaseOptions {
     projectId: 'gymtracker-5404c',
     databaseURL: 'https://gymtracker-5404c-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'gymtracker-5404c.firebasestorage.app',
+    androidClientId: '759625472979-co1087akgn1b3f3lfstjepsuoqrprc4g.apps.googleusercontent.com',
     iosClientId: '759625472979-jsj1m5pnhqbmthmoar68sklihr1bsq46.apps.googleusercontent.com',
     iosBundleId: 'com.example.gymTrackerApp',
   );
+
 }
