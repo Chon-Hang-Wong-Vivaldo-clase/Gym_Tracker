@@ -8,6 +8,8 @@ class RegisterEmailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final form = context.watch<AuthFormProvider>();
 
     void next() {
@@ -21,7 +23,8 @@ class RegisterEmailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Información Personal")),
-      body: Padding(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(22),
         child: Column(
           children: [
@@ -49,7 +52,7 @@ class RegisterEmailScreen extends StatelessWidget {
             const SizedBox(height: 14),
 
             if (form.error != null)
-              Text(form.error!, style: const TextStyle(color: Colors.red)),
+              Text(form.error!, style: TextStyle(color: colorScheme.error)),
 
             const SizedBox(height: 22),
             SizedBox(
@@ -66,3 +69,4 @@ class RegisterEmailScreen extends StatelessWidget {
     );
   }
 }
+

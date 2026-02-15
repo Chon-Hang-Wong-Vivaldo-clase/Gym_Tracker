@@ -22,16 +22,20 @@ class _GoalsScreenState extends State<GoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final onSurface = theme.colorScheme.onSurface;
+
     final year = DateTime.now().year;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: scaffoldBg,
+        surfaceTintColor: scaffoldBg,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Objetivos",
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
         ),
       ),
       body: ListView(
@@ -39,7 +43,7 @@ class _GoalsScreenState extends State<GoalsScreen> {
         children: [
           Text(
             "Objetivos para $year",
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18, color: onSurface),
           ),
           const SizedBox(height: 12),
           _Field(
@@ -61,8 +65,8 @@ class _GoalsScreenState extends State<GoalsScreen> {
           const SizedBox(height: 8),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2B2E34),
-              foregroundColor: Colors.white,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              foregroundColor: theme.colorScheme.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -96,6 +100,11 @@ class _Field extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final surfaceContainer = theme.colorScheme.surfaceContainerHighest;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
@@ -103,16 +112,18 @@ class _Field extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
           ),
           const SizedBox(height: 6),
           TextField(
             controller: controller,
             keyboardType: keyboardType,
+            style: TextStyle(color: onSurface),
             decoration: InputDecoration(
               hintText: hint,
+              hintStyle: TextStyle(color: onSurfaceVariant),
               filled: true,
-              fillColor: const Color(0xFFF2F2F2),
+              fillColor: surfaceContainer,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,

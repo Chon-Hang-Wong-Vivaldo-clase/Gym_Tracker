@@ -64,7 +64,8 @@ class _StreakWaterRingState extends State<StreakWaterRing>
   Widget build(BuildContext context) {
     final progress = (widget.streakDays / widget.maxVisualDays).clamp(0.0, 1.0);
 
-    const centerColor = Color(0xFF9E9E9E);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final centerColor = isDark ? const Color(0xFF616161) : const Color(0xFF9E9E9E);
     final waterColor = _streakColor(widget.streakDays);
 
     return SizedBox(
@@ -73,14 +74,21 @@ class _StreakWaterRingState extends State<StreakWaterRing>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Contenedor circular exterior (borde)
-          Container(
-            width: widget.size,
-            height: widget.size,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.black12, width: 2),
-            ),
+          // Contenedor circular exterior (borde) — visible en claro y oscuro
+          Builder(
+            builder: (context) {
+              final borderColor = Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white24
+                  : Colors.black26;
+              return Container(
+                width: widget.size,
+                height: widget.size,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: borderColor, width: 2),
+                ),
+              );
+            },
           ),
 
           // Agua dentro del círculo exterior
@@ -104,7 +112,7 @@ class _StreakWaterRingState extends State<StreakWaterRing>
           Container(
             width: widget.size * 0.72,
             height: widget.size * 0.72,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: centerColor,
             ),

@@ -31,6 +31,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final form = context.watch<AuthFormProvider>();
 
     Future<void> finish() async {
@@ -48,7 +50,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Completar perfil")),
-      body: Padding(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(22),
         child: Column(
           children: [
@@ -80,7 +83,7 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ),
 
             if (form.error != null)
-              Text(form.error!, style: const TextStyle(color: Colors.red)),
+              Text(form.error!, style: TextStyle(color: colorScheme.error)),
 
             const SizedBox(height: 10),
             SizedBox(

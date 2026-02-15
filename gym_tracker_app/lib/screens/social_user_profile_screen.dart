@@ -26,49 +26,21 @@ class SocialUserProfileScreen extends StatefulWidget {
 
 class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
   bool _loading = false;
-  bool _isFollowing = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadFollowing();
-  }
-
-  Future<void> _loadFollowing() async {
-    final current = FirebaseAuth.instance.currentUser;
-    if (current == null) return;
-    final ref = FirebaseDatabase.instance
-        .ref('users/${current.uid}/following/${widget.userId}');
-    final snap = await ref.get();
-    if (!mounted) return;
-    setState(() {
-      _isFollowing = snap.value == true;
-    });
-  }
-
-  Future<void> _toggleFollow() async {
+  Future<void> _setFollow(bool follow) async {
     if (_loading) return;
     final current = FirebaseAuth.instance.currentUser;
-    if (current == null) {
-      return;
-    }
+    if (current == null) return;
     setState(() => _loading = true);
-
     try {
       final root = FirebaseDatabase.instance.ref();
       final updates = <String, Object?>{
-        'users/${current.uid}/following/${widget.userId}':
-            _isFollowing ? null : true,
-        'users/${widget.userId}/followers/${current.uid}':
-            _isFollowing ? null : true,
+        'users/${current.uid}/following/${widget.userId}': follow ? true : null,
+        'users/${widget.userId}/followers/${current.uid}': follow ? true : null,
       };
       await root.update(updates);
-      if (!mounted) return;
-      setState(() {
-        _isFollowing = !_isFollowing;
-      });
     } catch (e) {
-      if (!mounted) return;
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -76,11 +48,14 @@ class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUid = FirebaseAuth.instance.currentUser?.uid;
+    final followingRef = currentUid == null
+        ? null
+        : FirebaseDatabase.instance.ref('users/$currentUid/following/${widget.userId}');
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -100,33 +75,76 @@ class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
           Center(
             child: Text(
               widget.username,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2B2E34),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 8),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
-              onPressed: _loading ? null : _toggleFollow,
-              child: _loading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(_isFollowing ? "SIGUIENDO" : "SEGUIR"),
             ),
           ),
+          const SizedBox(height: 12),
+          if (followingRef == null)
+            const SizedBox.shrink()
+          else
+            StreamBuilder<DatabaseEvent>(
+              stream: followingRef.onValue,
+              builder: (context, snapshot) {
+                final isFollowing = snapshot.data?.snapshot.value == true;
+                return Center(
+                  child: Wrap(
+                    spacing: 10,
+                    runSpacing: 8,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      if (isFollowing) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "SIGUIENDO",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _loading ? null : () => _setFollow(false),
+                          child: _loading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text("Dejar de seguir"),
+                        ),
+                      ] else
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                            foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                          onPressed: _loading ? null : () => _setFollow(true),
+                          child: _loading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Text("SEGUIR"),
+                        ),
+                    ],
+                  ),
+                );
+              },
+            ),
           const SizedBox(height: 14),
           Row(
             children: [
@@ -150,15 +168,19 @@ class _SocialUserProfileScreenState extends State<SocialUserProfileScreen> {
             ],
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             "Rutinas",
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              fontSize: 18,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFFF2F2F2),
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(14),
             ),
             child: Column(
@@ -180,16 +202,17 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Container(
         width: 92,
         height: 92,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE0E0E0),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceContainerHighest,
           shape: BoxShape.circle,
         ),
         child: photoUrl == null
-            ? const Icon(Icons.person, size: 44, color: Colors.black54)
+            ? Icon(Icons.person, size: 44, color: theme.colorScheme.onSurfaceVariant)
             : ClipOval(
                 child: Image.network(
                   photoUrl!,
@@ -218,17 +241,23 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final outline = theme.colorScheme.outline.withOpacity(0.3);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-        boxShadow: const [
+        border: Border.all(color: outline),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x11000000),
+            color: theme.colorScheme.shadow.withOpacity(0.06),
             blurRadius: 8,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -240,12 +269,9 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
               ),
-              Icon(icon, size: 18, color: Colors.black87),
+              Icon(icon, size: 18, color: onSurface),
             ],
           ),
           const SizedBox(height: 10),
@@ -254,9 +280,10 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 28,
+                  color: onSurface,
                 ),
               ),
               const SizedBox(width: 4),
@@ -264,7 +291,7 @@ class _StatCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   unit,
-                  style: const TextStyle(color: Colors.black54),
+                  style: TextStyle(color: onSurfaceVariant),
                 ),
               ),
             ],
@@ -294,11 +321,16 @@ class _RoutineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surface,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -306,17 +338,17 @@ class _RoutineCard extends StatelessWidget {
         children: [
           Text(
             routine.title,
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: onSurface),
           ),
           const SizedBox(height: 2),
           Text(
             routine.subtitle,
-            style: const TextStyle(color: Colors.black54, fontSize: 12),
+            style: TextStyle(color: onSurfaceVariant, fontSize: 12),
           ),
           const SizedBox(height: 6),
           Text(
             routine.description,
-            style: const TextStyle(color: Colors.black87, fontSize: 12),
+            style: TextStyle(color: onSurface, fontSize: 12),
           ),
         ],
       ),

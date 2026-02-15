@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:gym_tracker_app/providers/app_auth_provider.dart';
+import 'package:gym_tracker_app/providers/theme_provider.dart';
 import 'package:gym_tracker_app/screens/training_history_screen.dart';
 import 'package:gym_tracker_app/widgets/auth_gate.dart';
 
@@ -14,11 +15,10 @@ class AppEndDrawer extends StatefulWidget {
 }
 
 class _AppEndDrawerState extends State<AppEndDrawer> {
-  bool _darkTheme = false;
-
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AppAuthProvider>();
+    final themeNotifier = context.watch<ThemeNotifier>();
     final user = auth.user;
     final uid = user?.uid;
     final profileRef = uid == null
@@ -27,13 +27,10 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
     final settingsRef = uid == null
         ? null
         : FirebaseDatabase.instance.ref('users/$uid/settings');
-    final presenceRef = uid == null
-        ? null
-        : FirebaseDatabase.instance.ref('users/$uid/presence');
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.78,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
@@ -46,9 +43,7 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
               ),
               const SizedBox(height: 8),
               _ProfileHeader(userEmail: user?.email, profileRef: profileRef),
-              _PresenceStatus(presenceRef: presenceRef),
-              const SizedBox(height: 18),
-              _SettingsSwitch(
+              _SettingsPanel(
                 label: "Activo",
                 activeTrackColor: const Color(0xFF4CAF50),
                 inactiveTrackColor: const Color(0xFFBDBDBD),
@@ -61,11 +56,9 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
                 label: "Tema Oscuro",
                 activeTrackColor: const Color(0xFF4CAF50),
                 inactiveTrackColor: const Color(0xFFBDBDBD),
-                value: _darkTheme,
+                value: themeNotifier.isDarkMode,
                 onChanged: (next) {
-                  setState(() {
-                    _darkTheme = next;
-                  });
+                  themeNotifier.setDarkMode(next);
                 },
               ),
               const SizedBox(height: 24),
@@ -119,6 +112,70 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _SettingsPanel extends StatelessWidget {
+  const _SettingsPanel({
+    required this.label,
+    required this.activeTrackColor,
+    required this.inactiveTrackColor,
+    required this.settingsRef,
+    required this.fieldKey,
+    required this.fallback,
+  });
+
+  final String label;
+  final Color activeTrackColor;
+  final Color inactiveTrackColor;
+  final DatabaseReference? settingsRef;
+  final String fieldKey;
+  final bool fallback;
+
+  @override
+  Widget build(BuildContext context) {
+    if (settingsRef == null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _PresenceStatusView(isActive: false),
+          const SizedBox(height: 18),
+          _SwitchRow(
+            label: label,
+            value: fallback,
+            activeTrackColor: activeTrackColor,
+            inactiveTrackColor: inactiveTrackColor,
+            onChanged: null,
+          ),
+        ],
+      );
+    }
+
+    return StreamBuilder<DatabaseEvent>(
+      stream: settingsRef!.onValue,
+      builder: (context, snapshot) {
+        final raw = snapshot.data?.snapshot.value;
+        final data = raw is Map ? raw : <dynamic, dynamic>{};
+        final isActive = (data[fieldKey] ?? fallback) == true;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _PresenceStatusView(isActive: isActive),
+            const SizedBox(height: 18),
+            _SwitchRow(
+              label: label,
+              value: isActive,
+              activeTrackColor: activeTrackColor,
+              inactiveTrackColor: inactiveTrackColor,
+              onChanged: (next) async {
+                await settingsRef!.child(fieldKey).set(next);
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }
@@ -212,101 +269,33 @@ class _ProfileContent extends StatelessWidget {
   }
 }
 
-class _PresenceStatus extends StatelessWidget {
-  const _PresenceStatus({required this.presenceRef});
+class _PresenceStatusView extends StatelessWidget {
+  const _PresenceStatusView({required this.isActive});
 
-  final DatabaseReference? presenceRef;
+  final bool isActive;
 
   @override
   Widget build(BuildContext context) {
-    if (presenceRef == null) {
-      return const Padding(
-        padding: EdgeInsets.only(top: 6),
-        child: Text(
-          "Estado: Desconectado",
-          style: TextStyle(color: Colors.black54, fontSize: 12),
-        ),
-      );
-    }
-
-    return StreamBuilder<DatabaseEvent>(
-      stream: presenceRef!.onValue,
-      builder: (context, snapshot) {
-        final raw = snapshot.data?.snapshot.value;
-        final data = raw is Map ? raw : <dynamic, dynamic>{};
-        final state = data['state']?.toString() ?? 'offline';
-        final online = state == 'online';
-        return Padding(
-          padding: const EdgeInsets.only(top: 6),
-          child: Row(
-            children: [
-              Container(
-                width: 8,
-                height: 8,
-                decoration: BoxDecoration(
-                  color: online ? const Color(0xFF2E7D32) : Colors.grey,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                online ? "Estado: Conectado" : "Estado: Desconectado",
-                style: const TextStyle(color: Colors.black54, fontSize: 12),
-              ),
-            ],
+    final textColor = Theme.of(context).textTheme.bodySmall?.color ?? Colors.black54;
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFF2E7D32) : Colors.red,
+              shape: BoxShape.circle,
+            ),
           ),
-        );
-      },
-    );
-  }
-}
-
-class _SettingsSwitch extends StatelessWidget {
-  const _SettingsSwitch({
-    required this.label,
-    required this.activeTrackColor,
-    required this.inactiveTrackColor,
-    required this.settingsRef,
-    required this.fieldKey,
-    required this.fallback,
-  });
-
-  final String label;
-  final Color activeTrackColor;
-  final Color inactiveTrackColor;
-  final DatabaseReference? settingsRef;
-  final String fieldKey;
-  final bool fallback;
-
-  @override
-  Widget build(BuildContext context) {
-    if (settingsRef == null) {
-      return _SwitchRow(
-        label: label,
-        value: fallback,
-        activeTrackColor: activeTrackColor,
-        inactiveTrackColor: inactiveTrackColor,
-        onChanged: null,
-      );
-    }
-
-    return StreamBuilder<DatabaseEvent>(
-      stream: settingsRef!.onValue,
-      builder: (context, snapshot) {
-        final raw = snapshot.data?.snapshot.value;
-        final data = raw is Map ? raw : <dynamic, dynamic>{};
-        final value = (data[fieldKey] ?? fallback) == true;
-
-        return _SwitchRow(
-          label: label,
-          value: value,
-          activeTrackColor: activeTrackColor,
-          inactiveTrackColor: inactiveTrackColor,
-          onChanged: (next) async {
-            await settingsRef!.child(fieldKey).set(next);
-          },
-        );
-      },
+          const SizedBox(width: 6),
+          Text(
+            isActive ? "Conectado" : "Desconectado",
+            style: TextStyle(color: textColor, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }

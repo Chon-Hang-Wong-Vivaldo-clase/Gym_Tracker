@@ -26,9 +26,14 @@ class TrainingSessionService {
 
     final todayKey = _dateKey(endedAt);
     final statsRef = root.child('users/$userUid/stats');
+    final profileRef = root.child('users/$userUid/profile');
     final statsSnap = await statsRef.get();
+    final profileSnap = await profileRef.get();
     final stats = statsSnap.value is Map
         ? Map<String, dynamic>.from(statsSnap.value as Map)
+        : <String, dynamic>{};
+    final profile = profileSnap.value is Map
+        ? Map<String, dynamic>.from(profileSnap.value as Map)
         : <String, dynamic>{};
 
     final trainedMapRaw = stats['trainedDays'];
@@ -36,8 +41,13 @@ class TrainingSessionService {
         ? Map<String, dynamic>.from(trainedMapRaw)
         : <String, dynamic>{};
     trainedMap[todayKey] = true;
+    final restDays = _parseRestDays(profile['restDays']);
 
-    final streak = _computeStreak(trainedMap.keys);
+    final streak = _computeStreak(
+      trainedMap.keys,
+      restDays: restDays,
+      referenceDate: endedAt,
+    );
     final trainedCount = trainedMap.length;
     final prevRest = (stats['restDaysCount'] is num)
         ? (stats['restDaysCount'] as num).toInt()
@@ -64,17 +74,31 @@ class TrainingSessionService {
     );
   }
 
-  static int _computeStreak(Iterable<String> keys) {
+  static int _computeStreak(
+    Iterable<String> keys, {
+    required Set<int> restDays,
+    required DateTime referenceDate,
+  }) {
     final dates = keys.map(_parseDateKey).whereType<DateTime>().toSet();
     if (dates.isEmpty) return 0;
 
-    var current = DateTime.now();
+    var current = referenceDate;
     current = DateTime(current.year, current.month, current.day);
     var streak = 0;
+    var guard = 0;
 
-    while (dates.contains(current)) {
-      streak += 1;
-      current = current.subtract(const Duration(days: 1));
+    while (guard < 3650) {
+      guard += 1;
+      if (dates.contains(current)) {
+        streak += 1;
+        current = current.subtract(const Duration(days: 1));
+        continue;
+      }
+      if (restDays.contains(current.weekday)) {
+        current = current.subtract(const Duration(days: 1));
+        continue;
+      }
+      break;
     }
 
     return streak;
@@ -106,6 +130,30 @@ class TrainingSessionService {
     final d = int.tryParse(parts[2]);
     if (y == null || m == null || d == null) return null;
     return DateTime(y, m, d);
+  }
+
+  static Set<int> _parseRestDays(dynamic raw) {
+    final values = <int>{};
+    if (raw is List) {
+      for (final v in raw) {
+        final n = _toInt(v);
+        if (n != null && n >= 1 && n <= 7) values.add(n);
+      }
+    } else if (raw is Map) {
+      for (final v in raw.values) {
+        final n = _toInt(v);
+        if (n != null && n >= 1 && n <= 7) values.add(n);
+      }
+    }
+    final sorted = values.toList()..sort();
+    return sorted.take(2).toSet();
+  }
+
+  static int? _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 }
 

@@ -15,16 +15,25 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
   final ValueChanged<DateTime>? onDayTapped;
   final bool showLegend;
 
-  static const Color _todayColor = Colors.black;
-  static const Color _plannedColor = Color(0xFFE0E0E0);
-  static const Color _streakColor = Color(0xFFB0B0B0);
-
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final focused = DateTime(now.year, now.month, now.day);
     final firstDay = DateTime(now.year - 2, 1, 1);
     final lastDay = DateTime(now.year + 2, 12, 31);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final onSurface = theme.colorScheme.onSurface;
+    final surface = theme.colorScheme.surface;
+
+    // Colores que se ven en ambos temas (invertidos en oscuro)
+    final todayColor = isDark ? onSurface : Colors.black;
+    final todayTextColor = isDark ? surface : Colors.white;
+    final streakColor = isDark ? const Color(0xFF757575) : const Color(0xFFB0B0B0);
+    final plannedColor = isDark ? const Color(0xFF5C5C5C) : const Color(0xFFE0E0E0);
+    final defaultTextColor = onSurface;
+    final outsideTextColor = onSurface.withOpacity(0.4);
+    final legendLabelColor = theme.colorScheme.onSurfaceVariant;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -33,20 +42,27 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
           firstDay: firstDay,
           lastDay: lastDay,
           focusedDay: focused,
-          headerStyle: const HeaderStyle(
+          headerStyle: HeaderStyle(
             titleCentered: false,
             formatButtonVisible: false,
             leftChevronVisible: true,
             rightChevronVisible: true,
-            titleTextStyle: TextStyle(fontWeight: FontWeight.w600),
+            titleTextStyle: TextStyle(
+              fontWeight: FontWeight.w600,
+              color: onSurface,
+            ),
+            leftChevronIcon: Icon(Icons.chevron_left, color: onSurface),
+            rightChevronIcon: Icon(Icons.chevron_right, color: onSurface),
           ),
-          daysOfWeekStyle: const DaysOfWeekStyle(
-            weekdayStyle: TextStyle(fontSize: 12, color: Colors.black54),
-            weekendStyle: TextStyle(fontSize: 12, color: Colors.black54),
+          daysOfWeekStyle: DaysOfWeekStyle(
+            weekdayStyle: TextStyle(fontSize: 12, color: onSurface),
+            weekendStyle: TextStyle(fontSize: 12, color: onSurface),
           ),
-          calendarStyle: const CalendarStyle(
+          calendarStyle: CalendarStyle(
             outsideDaysVisible: false,
             isTodayHighlighted: false,
+            defaultTextStyle: TextStyle(color: defaultTextColor),
+            weekendTextStyle: TextStyle(color: defaultTextColor),
           ),
           selectedDayPredicate: (_) => false,
           onDaySelected: (selectedDay, _) {
@@ -54,31 +70,81 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
           },
           calendarBuilders: CalendarBuilders(
             defaultBuilder: (context, day, focusedDay) {
-              return _buildDayCell(day, isOutside: false);
+              return _buildDayCell(
+                context,
+                day,
+                isOutside: false,
+                todayColor: todayColor,
+                todayTextColor: todayTextColor,
+                streakColor: streakColor,
+                plannedColor: plannedColor,
+                defaultTextColor: defaultTextColor,
+                outsideTextColor: outsideTextColor,
+              );
             },
             todayBuilder: (context, day, focusedDay) {
-              return _buildDayCell(day, isOutside: false);
+              return _buildDayCell(
+                context,
+                day,
+                isOutside: false,
+                todayColor: todayColor,
+                todayTextColor: todayTextColor,
+                streakColor: streakColor,
+                plannedColor: plannedColor,
+                defaultTextColor: defaultTextColor,
+                outsideTextColor: outsideTextColor,
+              );
             },
             outsideBuilder: (context, day, focusedDay) {
-              return _buildDayCell(day, isOutside: true);
+              return _buildDayCell(
+                context,
+                day,
+                isOutside: true,
+                todayColor: todayColor,
+                todayTextColor: todayTextColor,
+                streakColor: streakColor,
+                plannedColor: plannedColor,
+                defaultTextColor: defaultTextColor,
+                outsideTextColor: outsideTextColor,
+              );
             },
             disabledBuilder: (context, day, focusedDay) {
-              return _buildDayCell(day, isOutside: true);
+              return _buildDayCell(
+                context,
+                day,
+                isOutside: true,
+                todayColor: todayColor,
+                todayTextColor: todayTextColor,
+                streakColor: streakColor,
+                plannedColor: plannedColor,
+                defaultTextColor: defaultTextColor,
+                outsideTextColor: outsideTextColor,
+              );
             },
           ),
         ),
         if (showLegend) ...[
           const SizedBox(height: 10),
-          const Divider(height: 20),
+          Divider(height: 20, color: legendLabelColor.withOpacity(0.3)),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: const [
-              _LegendItem(color: _todayColor, label: "Hoy"),
-              _LegendItem(color: _streakColor, label: "Racha"),
+            children: [
               _LegendItem(
-                color: Colors.white,
+                color: todayColor,
+                label: "Hoy",
+                labelColor: legendLabelColor,
+              ),
+              _LegendItem(
+                color: streakColor,
+                label: "Racha",
+                labelColor: legendLabelColor,
+              ),
+              _LegendItem(
+                color: surface,
                 label: "Descanso",
+                labelColor: legendLabelColor,
                 outline: true,
+                outlineColor: onSurface.withOpacity(0.5),
               ),
             ],
           ),
@@ -87,25 +153,37 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
     );
   }
 
-  Widget _buildDayCell(DateTime day, {required bool isOutside}) {
+  Widget _buildDayCell(
+    BuildContext context,
+    DateTime day, {
+    required bool isOutside,
+    required Color todayColor,
+    required Color todayTextColor,
+    required Color streakColor,
+    required Color plannedColor,
+    required Color defaultTextColor,
+    required Color outsideTextColor,
+  }) {
     final isToday = isSameDay(day, DateTime.now());
     final isStreak = _containsDay(streakDays, day);
     final isPlanned = _containsDay(plannedDays, day);
 
     Color? background;
-    Color textColor = Colors.black87;
+    Color textColor = defaultTextColor;
 
     if (isToday) {
-      background = _todayColor;
-      textColor = Colors.white;
+      background = todayColor;
+      textColor = todayTextColor;
     } else if (isStreak) {
-      background = _streakColor;
+      background = streakColor;
+      textColor = defaultTextColor;
     } else if (isPlanned) {
-      background = _plannedColor;
+      background = plannedColor;
+      textColor = defaultTextColor;
     }
 
     if (isOutside) {
-      textColor = Colors.black26;
+      textColor = outsideTextColor;
       background = null;
     }
 
@@ -139,12 +217,16 @@ class _LegendItem extends StatelessWidget {
   const _LegendItem({
     required this.color,
     required this.label,
+    required this.labelColor,
     this.outline = false,
+    this.outlineColor,
   });
 
   final Color color;
   final String label;
+  final Color labelColor;
   final bool outline;
+  final Color? outlineColor;
 
   @override
   Widget build(BuildContext context) {
@@ -154,15 +236,17 @@ class _LegendItem extends StatelessWidget {
           width: 12,
           height: 12,
           decoration: BoxDecoration(
-            color: outline ? Colors.white : color,
+            color: outline ? color : color,
             shape: BoxShape.circle,
-            border: outline ? Border.all(color: Colors.black45) : null,
+            border: outline
+                ? Border.all(color: outlineColor ?? Colors.black45)
+                : null,
           ),
         ),
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          style: TextStyle(fontSize: 12, color: labelColor),
         ),
       ],
     );

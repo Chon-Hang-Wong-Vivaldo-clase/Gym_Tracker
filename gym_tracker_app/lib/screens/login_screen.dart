@@ -10,8 +10,9 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const dark = Color(0xFF2B2E34);
-    const greyBtn = Color(0xFF8A8F98);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
 
     final form = context.watch<AuthFormProvider>();
     final auth = context.read<AppAuthProvider>();
@@ -73,36 +74,50 @@ class LoginScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? colorScheme.surface : Colors.white,
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 22),
           child: Column(
             children: [
               const SizedBox(height: 70),
-              const Text(
+              Text(
                 "Gym Tracker",
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 "Entrena hoy, supérate mañana",
-                style: TextStyle(color: Colors.black54),
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: 70),
-              const Text(
+              Text(
                 "Iniciar Sesión",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 18),
 
               TextField(
                 controller: form.emailCtrl,
                 keyboardType: TextInputType.emailAddress,
+                style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: "Gmail",
+                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                  fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: colorScheme.outline),
                   ),
                 ),
                 onChanged: (_) => form.clearError(),
@@ -111,10 +126,15 @@ class LoginScreen extends StatelessWidget {
               TextField(
                 controller: form.passCtrl,
                 obscureText: true,
+                style: TextStyle(color: colorScheme.onSurface),
                 decoration: InputDecoration(
                   hintText: "Contraseña",
+                  hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
+                  fillColor: colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: colorScheme.outline),
                   ),
                 ),
                 onChanged: (_) => form.clearError(),
@@ -122,7 +142,10 @@ class LoginScreen extends StatelessWidget {
               const SizedBox(height: 18),
 
               if (form.error != null) ...[
-                Text(form.error!, style: const TextStyle(color: Colors.red)),
+                Text(
+                  form.error!,
+                  style: TextStyle(color: colorScheme.error),
+                ),
                 const SizedBox(height: 10),
               ],
 
@@ -132,20 +155,20 @@ class LoginScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: form.loading ? null : onLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: dark,
-                    foregroundColor: Colors.white,
+                    backgroundColor: isDark ? colorScheme.primary : const Color(0xFF2B2E34),
+                    foregroundColor: colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
                   ),
                   child: form.loading
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 22,
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: colorScheme.onPrimary,
                           ),
                         )
                       : const Text("Continuar"),
@@ -153,7 +176,10 @@ class LoginScreen extends StatelessWidget {
               ),
 
               const SizedBox(height: 18),
-              const Text("Or", style: TextStyle(color: Colors.black54)),
+              Text(
+                "Or",
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+              ),
               const SizedBox(height: 18),
 
               SizedBox(
@@ -162,8 +188,8 @@ class LoginScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: form.loading ? null : onGoogle,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: greyBtn,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    foregroundColor: colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -175,7 +201,7 @@ class LoginScreen extends StatelessWidget {
                       Image.asset('assets/Google.webp', width: 30),
                       SizedBox(width: 60),
                       const Text(
-                        "Continue with Google",
+                        "Continuar con Google",
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -199,8 +225,8 @@ class LoginScreen extends StatelessWidget {
                           );
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: greyBtn,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.surfaceContainerHighest,
+                    foregroundColor: colorScheme.onSurface,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),

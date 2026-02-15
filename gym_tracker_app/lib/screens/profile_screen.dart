@@ -21,12 +21,14 @@ class ProfileScreen extends StatelessWidget {
         ? null
         : FirebaseDatabase.instance.ref('users/${user.uid}/profile');
 
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       endDrawer: const AppEndDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: scaffoldBg,
+        surfaceTintColor: scaffoldBg,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -55,11 +57,15 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 18),
             _StatsRow(statsRef: statsRef),
             const SizedBox(height: 22),
-            const Align(
+            Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "Ajustes",
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
             const SizedBox(height: 12),
@@ -127,15 +133,18 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surfaceContainer = theme.colorScheme.surfaceContainerHighest;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     return Container(
       width: 92,
       height: 92,
-      decoration: const BoxDecoration(
-        color: Color(0xFFE0E0E0),
+      decoration: BoxDecoration(
+        color: surfaceContainer,
         shape: BoxShape.circle,
       ),
       child: photoUrl == null
-          ? const Icon(Icons.person, size: 44, color: Colors.black54)
+          ? Icon(Icons.person, size: 44, color: onSurfaceVariant)
           : ClipOval(
               child: Image.network(
                 photoUrl!,
@@ -172,17 +181,20 @@ class _ProfileHeader extends StatelessWidget {
 }
 
 class _ProfileName extends StatelessWidget {
-  const _ProfileName({required this.profileRef, this.fallback});
+  const _ProfileName({required this.profileRef});
 
   final DatabaseReference? profileRef;
-  final String? fallback;
 
   @override
   Widget build(BuildContext context) {
     if (profileRef == null) {
       return Text(
-        fallback ?? "Usuario",
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+        "Usuario",
+        style: TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 18,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       );
     }
 
@@ -199,8 +211,12 @@ class _ProfileName extends StatelessWidget {
         ].where((value) => value.trim().isNotEmpty).join(' ').trim();
 
         return Text(
-          displayName.isEmpty ? (fallback ?? "Usuario") : displayName,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
+          displayName.isEmpty ? "Usuario" : displayName,
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         );
       },
     );
@@ -290,17 +306,23 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final outline = theme.colorScheme.outline.withOpacity(0.3);
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final shadowColor = theme.colorScheme.shadow.withOpacity(0.06);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE0E0E0)),
-        boxShadow: const [
+        border: Border.all(color: outline),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x11000000),
+            color: shadowColor,
             blurRadius: 8,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -312,12 +334,12 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: onSurface,
                 ),
               ),
-              Icon(icon, size: 18, color: Colors.black87),
+              Icon(icon, size: 18, color: onSurface),
             ],
           ),
           const SizedBox(height: 10),
@@ -326,9 +348,10 @@ class _StatCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 28,
+                  color: onSurface,
                 ),
               ),
               const SizedBox(width: 4),
@@ -336,7 +359,7 @@ class _StatCard extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 2),
                 child: Text(
                   unit,
-                  style: const TextStyle(color: Colors.black54),
+                  style: TextStyle(color: onSurfaceVariant),
                 ),
               ),
             ],
@@ -364,11 +387,12 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final containerColor = Theme.of(context).colorScheme.surfaceContainerHighest;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: containerColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Wrap(
@@ -377,9 +401,10 @@ class _SettingsCard extends StatelessWidget {
         alignment: WrapAlignment.center,
         children: [
           _SettingsItem(
-            icon: Icons.star_border,
+            icon: Icons.star,
             label: "Premium",
             filled: true,
+            isPremium: true,
             onTap: onPremium,
           ),
           _SettingsItem(
@@ -408,21 +433,38 @@ class _SettingsCard extends StatelessWidget {
   }
 }
 
+/// Color dorado para la sección Premium.
+const Color _premiumGold = Color(0xFFD4AF37);
+const Color _premiumGoldDark = Color(0xFFB8860B);
+
 class _SettingsItem extends StatelessWidget {
   const _SettingsItem({
     required this.icon,
     required this.label,
     required this.onTap,
     this.filled = false,
+    this.isPremium = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool filled;
+  final bool isPremium;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final circleColor = isPremium
+        ? (isDark ? _premiumGoldDark : _premiumGold)
+        : (filled ? theme.colorScheme.primaryContainer : theme.colorScheme.surface);
+    final iconColor = isPremium
+        ? Colors.black87
+        : (filled ? theme.colorScheme.onPrimaryContainer : theme.colorScheme.onSurface);
+    final labelColor = isPremium && filled
+        ? (isDark ? _premiumGold : _premiumGoldDark)
+        : theme.colorScheme.onSurface;
     return SizedBox(
       width: 90,
       child: InkWell(
@@ -434,20 +476,20 @@ class _SettingsItem extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: filled ? const Color(0xFF2B2E34) : Colors.white,
+                color: circleColor,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
                 size: 20,
-                color: filled ? Colors.white : Colors.black87,
+                color: iconColor,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: Colors.black87),
+              style: TextStyle(fontSize: 12, color: labelColor),
             ),
           ],
         ),

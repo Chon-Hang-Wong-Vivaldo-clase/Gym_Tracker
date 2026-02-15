@@ -18,12 +18,14 @@ class SocialScreen extends StatelessWidget {
       'users/${FirebaseAuth.instance.currentUser?.uid}/likedRoutines',
     );
 
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       endDrawer: const AppEndDrawer(),
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: scaffoldBg,
+        surfaceTintColor: scaffoldBg,
+        scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
         title: const Text(
@@ -49,7 +51,7 @@ class SocialScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF2F2F2),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -57,25 +59,26 @@ class SocialScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "Seguidos",
                         style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 16,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       Container(
                         width: 34,
                         height: 34,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF2B2E34),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primaryContainer,
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
                           padding: EdgeInsets.zero,
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.person_add,
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onPrimaryContainer,
                           ),
                           onPressed: () => _openSearch(context),
                         ),
@@ -92,7 +95,11 @@ class SocialScreen extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 "Rutinas públicas",
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -104,10 +111,12 @@ class SocialScreen extends StatelessWidget {
                     snapshot.data?.snapshot.value,
                   );
                   if (items.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         "Aún no hay rutinas públicas",
-                        style: TextStyle(color: Colors.black54),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     );
                   }
@@ -254,8 +263,13 @@ class _FriendTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final surface = theme.colorScheme.surface;
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+
     return Material(
-      color: Colors.white,
+      color: surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -268,16 +282,12 @@ class _FriendTile extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: const Color(0xFFD9D9D9),
+                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
                     backgroundImage: friend.photoUrl == null
                         ? null
                         : NetworkImage(friend.photoUrl!),
                     child: friend.photoUrl == null
-                        ? const Icon(
-                            Icons.person,
-                            color: Colors.black54,
-                            size: 18,
-                          )
+                        ? Icon(Icons.person, color: onSurfaceVariant, size: 18)
                         : null,
                   ),
                   if (friend.isOnline)
@@ -290,7 +300,7 @@ class _FriendTile extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: const Color(0xFF2E7D32),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 1),
+                          border: Border.all(color: surface, width: 1),
                         ),
                       ),
                     ),
@@ -299,10 +309,10 @@ class _FriendTile extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 friend.username,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
               ),
               const Spacer(),
-              const Icon(Icons.chevron_right, color: Colors.black45),
+              Icon(Icons.chevron_right, color: onSurfaceVariant),
             ],
           ),
         ),
@@ -318,10 +328,12 @@ class _FollowingList extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentUid = FirebaseAuth.instance.currentUser?.uid;
     if (currentUid == null) {
-      return const Center(
+      return Center(
         child: Text(
           "Inicia sesión para ver seguidos",
-          style: TextStyle(color: Colors.black54),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       );
     }
@@ -337,10 +349,12 @@ class _FollowingList extends StatelessWidget {
         final data = raw is Map ? raw : <dynamic, dynamic>{};
         final ids = data.keys.map((e) => e.toString()).toList();
         if (ids.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               "Aún no sigues a nadie",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           );
         }
@@ -464,17 +478,22 @@ class _RoutinePublicCard extends StatelessWidget {
       '❤️ ${item.likesCount}',
     ].join(' • ');
 
+    final theme = Theme.of(context);
+    final cardColor = theme.colorScheme.surfaceContainerHighest;
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+
     return Card(
       elevation: 0,
-      color: const Color(0xFFF5F5F5),
+      color: cardColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         title: Text(
           item.name,
-          style: const TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
         ),
-        subtitle: Text(subtitle),
+        subtitle: Text(subtitle, style: TextStyle(color: onSurfaceVariant)),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -482,10 +501,10 @@ class _RoutinePublicCard extends StatelessWidget {
               onPressed: onLikeToggle,
               icon: Icon(
                 isLiked ? Icons.favorite : Icons.favorite_border,
-                color: isLiked ? const Color(0xFFE53935) : Colors.black54,
+                color: isLiked ? const Color(0xFFE53935) : onSurfaceVariant,
               ),
             ),
-            const Icon(Icons.chevron_right),
+            Icon(Icons.chevron_right, color: onSurfaceVariant),
           ],
         ),
         onTap: onOpen,

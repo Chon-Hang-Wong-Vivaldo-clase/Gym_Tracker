@@ -172,7 +172,7 @@ class _RoutineCard extends StatelessWidget {
       if (item.exercisesCount != null) '${item.exercisesCount} ejercicios',
       item.isPublic == true ? 'Pública' : 'Privada',
       if (item.likesCount != null) '❤️ ${item.likesCount}',
-    ].where((e) => e != null && e.toString().trim().isNotEmpty).join(' • ');
+    ].where((e) => e.toString().trim().isNotEmpty).join(' • ');
 
     return Card(
       elevation: 0,

@@ -9,7 +9,9 @@ class PasswordLoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const dark = Color(0xFF2B2E34);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
     final form = context.watch<AuthFormProvider>();
     final auth = context.read<AppAuthProvider>();
 
@@ -54,7 +56,7 @@ class PasswordLoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 14),
             if (form.error != null)
-              Text(form.error!, style: const TextStyle(color: Colors.red)),
+              Text(form.error!, style: TextStyle(color: colorScheme.error)),
             const SizedBox(height: 22),
             SizedBox(
               width: double.infinity,
@@ -62,16 +64,16 @@ class PasswordLoginScreen extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: form.loading ? null : onSubmit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: dark,
-                  foregroundColor: Colors.white,
+                  backgroundColor: isDark ? colorScheme.primary : const Color(0xFF2B2E34),
+                  foregroundColor: colorScheme.onPrimary,
                 ),
                 child: form.loading
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: colorScheme.onPrimary,
                         ),
                       )
                     : const Text("Continuar"),

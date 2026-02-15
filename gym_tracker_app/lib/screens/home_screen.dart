@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker_app/providers/app_auth_provider.dart';
@@ -14,29 +13,34 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final auth = context.watch<AppAuthProvider>();
     final uid = auth.user?.uid;
-    final statsRef = uid == null
+    final userRef = uid == null
         ? null
-        : FirebaseDatabase.instance.ref('users/$uid/stats');
+        : FirebaseDatabase.instance.ref('users/$uid');
 
+    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       endDrawer: const AppEndDrawer(),
       appBar: AppBar(
+        backgroundColor: scaffoldBg,
+        surfaceTintColor: scaffoldBg,
+        scrolledUnderElevation: 0,
         leading: const SizedBox(),
         title: Row(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/logo.png',
+              Theme.of(context).brightness == Brightness.dark
+                  ? 'assets/image.png'
+                  : 'assets/logo-removebg-preview.png',
               fit: BoxFit.contain,
               height: 32,
               alignment: FractionalOffset.center,
             ),
           ],
         ),
-        surfaceTintColor: Colors.white,
-        backgroundColor: Colors.white,
+        elevation: 0,
         actions: [
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 15, 0),
@@ -57,14 +61,18 @@ class HomeScreen extends StatelessWidget {
             Padding(
               padding: EdgeInsets.fromLTRB(10, 0, 0, 10),
               child: WeekSwiper(
-                onDateSelected: (date) {
-                  print(date);
-                },
+                onDateSelected: (_) {},
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.fromLTRB(25, 0, 0, 10),
-              child: Text("¡Buenos días!", style: TextStyle(fontSize: 22)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(25, 0, 0, 10),
+              child: Text(
+                "¡Buenos días!",
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
             ),
             SizedBox(height: 20),
             Padding(
@@ -92,23 +100,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 20, 0, 35),
-              child: Center(child: _StreakRing(statsRef: statsRef)),
-            ),
-            const Center(
-              child: Text(
-                "Seguimiento mensual",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-              ),
-            ),
-            const Divider(height: 30, endIndent: 30, indent: 30),
-            _StatsRow(statsRef: statsRef),
-            SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _MonthlyCalendar(statsRef: statsRef, userUid: uid),
-            ),
+            _HomeStatsSection(userRef: userRef, userUid: uid),
           ],
         ),
       ),
@@ -116,81 +108,89 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _StreakRing extends StatelessWidget {
-  const _StreakRing({required this.statsRef});
+class _HomeStatsSection extends StatelessWidget {
+  const _HomeStatsSection({required this.userRef, required this.userUid});
 
-  final DatabaseReference? statsRef;
-
-  @override
-  Widget build(BuildContext context) {
-    if (statsRef == null) {
-      return const StreakWaterRing(streakDays: 0, goalDays: 30, size: 260);
-    }
-
-    return StreamBuilder<DatabaseEvent>(
-      stream: statsRef!.onValue,
-      builder: (context, snapshot) {
-        final data = snapshot.data?.snapshot.value as Map? ?? {};
-        final streakDays = (data['streakDays'] is num)
-            ? (data['streakDays'] as num).toInt()
-            : 0;
-        return StreakWaterRing(streakDays: streakDays, goalDays: 30, size: 260);
-      },
-    );
-  }
-}
-
-class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.statsRef});
-
-  final DatabaseReference? statsRef;
+  final DatabaseReference? userRef;
+  final String? userUid;
 
   @override
   Widget build(BuildContext context) {
-    if (statsRef == null) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+    if (userRef == null) {
+      return Column(
         children: [
-          StatCard(
-            title: "Entrenado",
-            value: 0,
-            background: const Color(0xFF2B2E34),
-            textColor: Colors.white,
+          const Padding(
+            padding: EdgeInsets.fromLTRB(0, 20, 0, 35),
+            child: Center(child: _StreakRing(streakDays: 0)),
           ),
-          const SizedBox(width: 14),
-          StatCard(
-            title: "Descanso",
-            value: 0,
-            background: const Color(0xFFBDBDBD),
-            textColor: Colors.white,
+          Center(
+            child: Text(
+              "Seguimiento mensual",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+          const Divider(height: 30, endIndent: 30, indent: 30),
+          const _StatsRow(trained: 0, rest: 0),
+          const SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _MonthlyCalendar(streakDays: const <DateTime>{}, userUid: userUid),
           ),
         ],
       );
     }
 
     return StreamBuilder<DatabaseEvent>(
-      stream: statsRef!.onValue,
+      stream: userRef!.onValue,
       builder: (context, snapshot) {
-        final data = snapshot.data?.snapshot.value as Map? ?? {};
-        final trained = (data['trainedDaysCount'] is num)
-            ? (data['trainedDaysCount'] as num).toInt()
+        final userData = snapshot.data?.snapshot.value as Map? ?? {};
+        final statsRaw = userData['stats'];
+        final stats = statsRaw is Map ? Map<String, dynamic>.from(statsRaw) : <String, dynamic>{};
+        final profileRaw = userData['profile'];
+        final profile = profileRaw is Map ? Map<String, dynamic>.from(profileRaw) : <String, dynamic>{};
+
+        final trained = (stats['trainedDaysCount'] is num)
+            ? (stats['trainedDaysCount'] as num).toInt()
             : 0;
-        final rest = _computeRestDays(data['lastTrainedAt']?.toString());
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        final rest = _computeRestDays(stats['lastTrainedAt']?.toString());
+        final trainedRaw = stats['trainedDays'];
+        final trainedMap = trainedRaw is Map ? trainedRaw : <dynamic, dynamic>{};
+        final days = trainedMap.keys
+            .map((key) => _parseDateKey(key.toString()))
+            .whereType<DateTime>()
+            .toSet();
+        final restDays = _parseRestDays(profile['restDays']);
+        final streakDays = _computeCurrentStreak(
+          trainedDays: days,
+          restDays: restDays,
+        );
+
+        return Column(
           children: [
-            StatCard(
-              title: "Entrenado",
-              value: trained,
-              background: const Color(0xFF2B2E34),
-              textColor: Colors.white,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 20, 0, 35),
+              child: Center(child: _StreakRing(streakDays: streakDays)),
             ),
-            const SizedBox(width: 14),
-            StatCard(
-              title: "Descanso",
-              value: rest,
-              background: const Color(0xFFBDBDBD),
-              textColor: Colors.white,
+            Center(
+              child: Text(
+                "Seguimiento mensual",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+            const Divider(height: 30, endIndent: 30, indent: 30),
+            _StatsRow(trained: trained, rest: rest),
+            const SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _MonthlyCalendar(streakDays: days, userUid: userUid),
             ),
           ],
         );
@@ -199,48 +199,75 @@ class _StatsRow extends StatelessWidget {
   }
 }
 
-class _MonthlyCalendar extends StatelessWidget {
-  const _MonthlyCalendar({required this.statsRef, required this.userUid});
+class _StreakRing extends StatelessWidget {
+  const _StreakRing({required this.streakDays});
 
-  final DatabaseReference? statsRef;
+  final int streakDays;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreakWaterRing(streakDays: streakDays, goalDays: 30, size: 260);
+  }
+}
+
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({required this.trained, required this.rest});
+
+  final int trained;
+  final int rest;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final trainedBg = isDark
+        ? theme.colorScheme.surfaceContainerHighest
+        : const Color(0xFF2B2E34);
+    final restBg = isDark
+        ? theme.colorScheme.surfaceContainerHigh
+        : const Color(0xFFBDBDBD);
+    final cardTextColor = isDark
+        ? theme.colorScheme.onSurface
+        : Colors.white;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        StatCard(
+          title: "Entrenado",
+          value: trained,
+          background: trainedBg,
+          textColor: cardTextColor,
+        ),
+        const SizedBox(width: 14),
+        StatCard(
+          title: "Descanso",
+          value: rest,
+          background: restBg,
+          textColor: cardTextColor,
+        ),
+      ],
+    );
+  }
+}
+
+class _MonthlyCalendar extends StatelessWidget {
+  const _MonthlyCalendar({required this.streakDays, required this.userUid});
+
+  final Set<DateTime> streakDays;
   final String? userUid;
 
   @override
   Widget build(BuildContext context) {
-    if (statsRef == null) {
-      return MonthlyWorkoutCalendar(
-        plannedDays: const <DateTime>{},
-        streakDays: const <DateTime>{},
-        onDayTapped: (date) {
-          if (userUid == null) return;
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => TrainingHistoryScreen(initialDay: date),
-            ),
-          );
-        },
-      );
-    }
-
-    return StreamBuilder<DatabaseEvent>(
-      stream: statsRef!.child('trainedDays').onValue,
-      builder: (context, snapshot) {
-        final data = snapshot.data?.snapshot.value as Map? ?? {};
-        final days = data.keys
-            .map((key) => _parseDateKey(key.toString()))
-            .whereType<DateTime>()
-            .toSet();
-        return MonthlyWorkoutCalendar(
-          plannedDays: const <DateTime>{},
-          streakDays: days,
-          onDayTapped: (date) {
-            if (userUid == null) return;
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => TrainingHistoryScreen(initialDay: date),
-              ),
-            );
-          },
+    return MonthlyWorkoutCalendar(
+      plannedDays: const <DateTime>{},
+      streakDays: streakDays,
+      onDayTapped: (date) {
+        if (userUid == null) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TrainingHistoryScreen(initialDay: date),
+          ),
         );
       },
     );
@@ -266,4 +293,56 @@ int _computeRestDays(String? lastTrainedIso) {
   final todayDate = DateTime(today.year, today.month, today.day);
   final diff = todayDate.difference(lastDate).inDays;
   return diff > 0 ? diff : 0;
+}
+
+Set<int> _parseRestDays(dynamic raw) {
+  final result = <int>{};
+  if (raw is List) {
+    for (final value in raw) {
+      final parsed = _toInt(value);
+      if (parsed != null && parsed >= 1 && parsed <= 7) result.add(parsed);
+    }
+  } else if (raw is Map) {
+    for (final value in raw.values) {
+      final parsed = _toInt(value);
+      if (parsed != null && parsed >= 1 && parsed <= 7) result.add(parsed);
+    }
+  }
+  final sorted = result.toList()..sort();
+  return sorted.take(2).toSet();
+}
+
+int _computeCurrentStreak({
+  required Set<DateTime> trainedDays,
+  required Set<int> restDays,
+}) {
+  if (trainedDays.isEmpty) return 0;
+
+  var current = DateTime.now();
+  current = DateTime(current.year, current.month, current.day);
+  var streak = 0;
+  var guard = 0;
+
+  while (guard < 3650) {
+    guard += 1;
+    if (trainedDays.contains(current)) {
+      streak += 1;
+      current = current.subtract(const Duration(days: 1));
+      continue;
+    }
+    if (restDays.contains(current.weekday)) {
+      current = current.subtract(const Duration(days: 1));
+      continue;
+    }
+    break;
+  }
+
+  return streak;
+}
+
+int? _toInt(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value);
+  return null;
 }

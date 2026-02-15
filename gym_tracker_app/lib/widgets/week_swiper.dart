@@ -68,6 +68,16 @@ class _WeekSwiperState extends State<WeekSwiper> {
         itemBuilder: (context, i) {
           final day = _days[i];
           final selected = _isSameDay(day, _selected);
+          final theme = Theme.of(context);
+          final onSurface = theme.colorScheme.onSurface;
+          final surface = theme.colorScheme.surface;
+          final isDark = theme.brightness == Brightness.dark;
+          final selectedBg = selected
+              ? (isDark ? theme.colorScheme.surfaceContainerHighest : const Color(0xFF2B2E34))
+              : Colors.transparent;
+          final selectedFg = selected
+              ? (isDark ? onSurface : Colors.white)
+              : onSurface;
 
           return InkWell(
             borderRadius: BorderRadius.circular(14),
@@ -79,7 +89,7 @@ class _WeekSwiperState extends State<WeekSwiper> {
               duration: const Duration(milliseconds: 180),
               width: 40,
               decoration: BoxDecoration(
-                color: selected ? const Color(0xFF2B2E34) : Colors.transparent,
+                color: selectedBg,
                 borderRadius: BorderRadius.circular(14),
               ),
               padding: const EdgeInsets.symmetric(vertical: 8),
@@ -91,7 +101,7 @@ class _WeekSwiperState extends State<WeekSwiper> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: selected ? Colors.white : Colors.black87,
+                      color: selectedFg,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -100,7 +110,7 @@ class _WeekSwiperState extends State<WeekSwiper> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: selected ? Colors.white : Colors.black54,
+                      color: selected ? selectedFg : onSurface.withOpacity(0.85),
                     ),
                   ),
                 ],

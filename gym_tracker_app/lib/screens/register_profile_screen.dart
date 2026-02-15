@@ -7,6 +7,8 @@ class RegisterProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final form = context.watch<AuthFormProvider>();
 
     Future<void> finish() async {
@@ -24,7 +26,8 @@ class RegisterProfileScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Información Personal")),
-      body: Padding(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(22),
         child: Column(
           children: [
@@ -56,7 +59,7 @@ class RegisterProfileScreen extends StatelessWidget {
             ),
 
             if (form.error != null)
-              Text(form.error!, style: const TextStyle(color: Colors.red)),
+              Text(form.error!, style: TextStyle(color: colorScheme.error)),
 
             const SizedBox(height: 10),
             SizedBox(

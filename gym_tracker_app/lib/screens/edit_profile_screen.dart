@@ -74,7 +74,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         if (parsed != null) result.add(parsed);
       }
     }
-    return result;
+    final sorted = result.toList()..sort();
+    return sorted.take(2).toSet();
   }
 
   int? _toInt(dynamic value) {
@@ -180,7 +181,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _saving = true);
     try {
-      final restDays = _restDays.toList()..sort();
+      final restDays = (_restDays.toList()..sort()).take(2).toList();
       await FirebaseDatabase.instance.ref('users/${user.uid}/profile').update({
         'name': name,
         'restDays': restDays,
@@ -204,22 +205,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scaffoldBg = theme.scaffoldBackgroundColor;
+    final onSurface = theme.colorScheme.onSurface;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final surfaceContainer = theme.colorScheme.surfaceContainerHighest;
+
     if (_loading) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: scaffoldBg,
+        body: Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
       );
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBg,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: scaffoldBg,
+        surfaceTintColor: scaffoldBg,
         elevation: 0,
-        title: const Text(
+        title: Text(
           "Editar perfil",
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
         ),
       ),
       body: ListView(
@@ -232,16 +239,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Container(
                   width: 90,
                   height: 90,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFE0E0E0),
+                  decoration: BoxDecoration(
+                    color: surfaceContainer,
                     shape: BoxShape.circle,
                   ),
                   child: _photoUrl == null
-                      ? const Icon(
-                          Icons.person,
-                          size: 44,
-                          color: Colors.black54,
-                        )
+                      ? Icon(Icons.person, size: 44, color: onSurfaceVariant)
                       : ClipOval(
                           child: Image.network(
                             _photoUrl!,
@@ -254,25 +257,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Container(
                   width: 30,
                   height: 30,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF2B2E34),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
                     shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                    icon: Icon(Icons.camera_alt, color: theme.colorScheme.onPrimaryContainer, size: 16),
                     onPressed: _uploadingPhoto ? null : _pickPhoto,
                   ),
                 ),
                 if (_uploadingPhoto)
-                  const Positioned.fill(
+                  Positioned.fill(
                     child: ColoredBox(
-                      color: Color(0x55000000),
+                      color: theme.colorScheme.shadow.withOpacity(0.3),
                       child: Center(
                         child: SizedBox(
                           width: 26,
                           height: 26,
-                          child: CircularProgressIndicator(strokeWidth: 2.2),
+                          child: CircularProgressIndicator(strokeWidth: 2.2, color: theme.colorScheme.primary),
                         ),
                       ),
                     ),
@@ -281,17 +284,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "Nombre de usuario",
-            style: TextStyle(fontWeight: FontWeight.w600),
+            style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
           ),
           const SizedBox(height: 6),
           TextField(
             controller: _nameController,
+            style: TextStyle(color: onSurface),
             decoration: InputDecoration(
               hintText: "Tu nombre",
+              hintStyle: TextStyle(color: onSurfaceVariant),
               filled: true,
-              fillColor: const Color(0xFFF2F2F2),
+              fillColor: surfaceContainer,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -299,9 +304,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          const Text(
-            "Días de descanso",
-            style: TextStyle(fontWeight: FontWeight.w600),
+          Text(
+            "Días de descanso (máx. 2)",
+            style: TextStyle(fontWeight: FontWeight.w600, color: onSurface),
           ),
           const SizedBox(height: 8),
           _RestDaysPicker(
@@ -315,15 +320,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             },
           ),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             "Estos días no afectan tu racha.",
-            style: TextStyle(color: Colors.black54),
+            style: TextStyle(color: onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2B2E34),
-              foregroundColor: Colors.white,
+              backgroundColor: theme.colorScheme.primaryContainer,
+              foregroundColor: theme.colorScheme.onPrimaryContainer,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -331,10 +336,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             onPressed: _saving ? null : _saveProfile,
             child: _saving
-                ? const SizedBox(
+                ? SizedBox(
                     width: 22,
                     height: 22,
-                    child: CircularProgressIndicator(strokeWidth: 2),
+                    child: CircularProgressIndicator(strokeWidth: 2, color: theme.colorScheme.onPrimaryContainer),
                   )
                 : const Text("Guardar cambios"),
           ),
@@ -365,6 +370,11 @@ class _RestDaysPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final onSurface = theme.colorScheme.onSurface;
+    final selectedColor = theme.colorScheme.primaryContainer;
+    final selectedFg = theme.colorScheme.onPrimaryContainer;
+
     return Wrap(
       spacing: 8,
       children: _labels.entries.map((entry) {
@@ -375,15 +385,18 @@ class _RestDaysPicker extends StatelessWidget {
           onSelected: (value) {
             final next = Set<int>.from(selected);
             if (value) {
+              if (next.length >= 2) {
+                return;
+              }
               next.add(entry.key);
             } else {
               next.remove(entry.key);
             }
             onChanged(next);
           },
-          selectedColor: const Color(0xFF2B2E34),
+          selectedColor: selectedColor,
           labelStyle: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
+            color: isSelected ? selectedFg : onSurface,
             fontWeight: FontWeight.w600,
           ),
         );

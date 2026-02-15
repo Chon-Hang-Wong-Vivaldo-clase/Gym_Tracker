@@ -18,6 +18,7 @@ dependencies:
   google_sign_in: ^6.0.0
   http: ^1.2.2
   image_picker: ^1.1.2
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -29,3 +30,5 @@ flutter:
   assets:
     - assets/logo.png
     - assets/Google.webp
+    - assets/image.png
+    - assets/logo-removebg-preview.png
