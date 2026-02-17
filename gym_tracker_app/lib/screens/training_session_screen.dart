@@ -140,16 +140,16 @@ class _TrainingSessionScreenState extends State<TrainingSessionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
     final exercise = widget.routine.exercises[_exerciseIndex];
     final name = exercise['name']?.toString() ?? 'Ejercicio';
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Sesión de entrenamiento"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? colorScheme.surface : Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
@@ -214,19 +214,19 @@ class _TrainingSessionScreenState extends State<TrainingSessionScreen> {
               child: ElevatedButton(
                 onPressed: _saving ? null : _nextExercise,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2B2E34),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: _saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: colorScheme.onPrimary,
                         ),
                       )
                     : Text(
@@ -285,12 +285,13 @@ class _TimerPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final min = elapsed.inMinutes.toString().padLeft(2, '0');
     final sec = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
@@ -309,11 +310,12 @@ class _SetsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (sets.isEmpty) {
-      return const Center(
+      return Center(
         child: Text(
           "No hay sets",
-          style: TextStyle(color: Colors.black54),
+          style: TextStyle(color: colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -356,7 +358,7 @@ class _SetRowState extends State<_SetRow> {
   void initState() {
     super.initState();
     _weightCtrl = TextEditingController(
-      text: widget.set.weight?.toString() ?? '',
+      text: _formatWeight(widget.set.weight),
     );
     _repsCtrl = TextEditingController(
       text: widget.set.reps?.toString() ?? '',
@@ -374,21 +376,40 @@ class _SetRowState extends State<_SetRow> {
   void didUpdateWidget(covariant _SetRow oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.set.weight != widget.set.weight) {
-      _weightCtrl.text = widget.set.weight?.toString() ?? '';
+      _weightCtrl.text = _formatWeight(widget.set.weight);
     }
     if (oldWidget.set.reps != widget.set.reps) {
       _repsCtrl.text = widget.set.reps?.toString() ?? '';
     }
   }
 
+  String _formatWeight(double? value) {
+    if (value == null) return '';
+    if (value == value.truncateToDouble()) {
+      return value.toInt().toString();
+    }
+    return value.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final rowBackground = isDark ? colorScheme.surfaceContainerHighest : Colors.white;
+    final rowBorder = isDark
+        ? colorScheme.outline.withOpacity(0.45)
+        : const Color(0xFFD8DBE0);
+    final fieldBackground = isDark ? colorScheme.surface : const Color(0xFFF8F9FA);
+    final fieldBorder = isDark
+        ? colorScheme.outline.withOpacity(0.35)
+        : const Color(0xFFCED3DA);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: rowBackground,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: rowBorder, width: 1),
       ),
       child: Row(
         children: [
@@ -404,12 +425,29 @@ class _SetRowState extends State<_SetRow> {
             child: TextField(
               controller: _weightCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: "Kg",
                 filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderSide: BorderSide.none),
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                fillColor: fieldBackground,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: fieldBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary.withOpacity(isDark ? 0.7 : 0.5),
+                    width: 1.2,
+                  ),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: fieldBorder),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
               ),
               onChanged: (value) {
                 final weight = double.tryParse(value);
@@ -422,12 +460,29 @@ class _SetRowState extends State<_SetRow> {
             child: TextField(
               controller: _repsCtrl,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: "Reps",
                 filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(borderSide: BorderSide.none),
-                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                fillColor: fieldBackground,
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: fieldBorder),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color: colorScheme.primary.withOpacity(isDark ? 0.7 : 0.5),
+                    width: 1.2,
+                  ),
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: fieldBorder),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 8,
+                ),
               ),
               onChanged: (value) {
                 final reps = int.tryParse(value);

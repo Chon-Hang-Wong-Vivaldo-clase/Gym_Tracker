@@ -11,6 +11,7 @@ class TrainingHistoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final auth = context.watch<AppAuthProvider>();
     final uid = auth.user?.uid;
     final sessionsRef = uid == null
@@ -24,10 +25,8 @@ class TrainingHistoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Historial de entrenos"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
         child: Column(
@@ -63,11 +62,12 @@ class _HistoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (sessionsRef == null) {
-      return const Center(
+      return Center(
         child: Text(
           "Inicia sesión para ver tus entrenos",
-          style: TextStyle(color: Colors.black54),
+          style: TextStyle(color: colorScheme.onSurfaceVariant),
         ),
       );
     }
@@ -94,10 +94,10 @@ class _HistoryList extends StatelessWidget {
           });
 
         if (sessions.isEmpty) {
-          return const Center(
+          return Center(
             child: Text(
               "No hay entrenos registrados",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           );
         }
@@ -132,6 +132,7 @@ class _SessionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final date = session.endedAt ?? session.startedAt;
     final dateLabel = date == null ? "Fecha desconocida" : _formatDateTime(date);
     final duration = _formatDuration(session.durationSec);
@@ -142,7 +143,7 @@ class _SessionCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F2F2),
+          color: colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -152,10 +153,13 @@ class _SessionCard extends StatelessWidget {
               height: 42,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.fitness_center, color: Colors.black87),
+              child: Icon(
+                Icons.fitness_center,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -171,7 +175,10 @@ class _SessionCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     dateLabel,
-                    style: const TextStyle(color: Colors.black54, fontSize: 12),
+                    style: TextStyle(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -195,6 +202,7 @@ class TrainingSessionDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final date = session.endedAt ?? session.startedAt;
     final dateLabel = date == null ? "Fecha desconocida" : _formatDateTime(date);
     final duration = _formatDuration(session.durationSec);
@@ -202,10 +210,8 @@ class TrainingSessionDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Detalle del entreno"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
         children: [
@@ -216,7 +222,7 @@ class TrainingSessionDetailScreen extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             dateLabel,
-            style: const TextStyle(color: Colors.black54),
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 10),
           Row(
@@ -228,9 +234,9 @@ class TrainingSessionDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (session.exercises.isEmpty)
-            const Text(
+            Text(
               "No hay ejercicios guardados.",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           for (final exercise in session.exercises) ...[
             _ExerciseBlock(exercise: exercise),
@@ -249,10 +255,11 @@ class _ExerciseBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F2),
+        color: colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -264,9 +271,9 @@ class _ExerciseBlock extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           if (exercise.sets.isEmpty)
-            const Text(
+            Text(
               "Sin sets guardados",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           for (var i = 0; i < exercise.sets.length; i++)
             _SetLine(index: i + 1, set: exercise.sets[i]),
@@ -284,6 +291,7 @@ class _SetLine extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final weightLabel =
         set.weight == null ? "--" : set.weight!.toStringAsFixed(1);
     final repsLabel = set.reps == null ? "--" : set.reps!.toString();
@@ -292,7 +300,10 @@ class _SetLine extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         "Set $index · $weightLabel kg · $repsLabel reps",
-        style: const TextStyle(fontSize: 13, color: Colors.black87),
+        style: TextStyle(
+          fontSize: 13,
+          color: colorScheme.onSurface,
+        ),
       ),
     );
   }
@@ -306,17 +317,18 @@ class _DateFilterPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2B2E34),
+            color: colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(999),
           ),
           child: Text(
             "Fecha: ${_formatDate(date)}",
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: colorScheme.onPrimaryContainer),
           ),
         ),
         const SizedBox(width: 10),

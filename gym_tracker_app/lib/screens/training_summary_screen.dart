@@ -12,6 +12,7 @@ class TrainingSummaryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final duration = Duration(seconds: durationSec);
     final min = duration.inMinutes;
     final sec = duration.inSeconds % 60;
@@ -19,10 +20,8 @@ class TrainingSummaryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Sesión completada"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
@@ -51,8 +50,8 @@ class TrainingSummaryScreen extends StatelessWidget {
                   Navigator.of(context).popUntil((route) => route.isFirst);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2B2E34),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colorScheme.primary,
+                  foregroundColor: colorScheme.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

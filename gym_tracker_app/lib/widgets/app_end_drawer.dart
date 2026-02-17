@@ -353,6 +353,10 @@ class _SwitchRow extends StatelessWidget {
           onChanged: onChanged,
           activeTrackColor: activeTrackColor,
           inactiveTrackColor: inactiveTrackColor,
+          thumbColor: const MaterialStatePropertyAll<Color>(Colors.white),
+          trackOutlineColor: const MaterialStatePropertyAll<Color>(
+            Colors.transparent,
+          ),
         ),
       ],
     );

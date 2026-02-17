@@ -55,7 +55,10 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 10),
             _ProfileName(profileRef: profileRef),
             const SizedBox(height: 18),
-            _StatsRow(statsRef: statsRef),
+            _StatsRow(
+              statsRef: statsRef,
+              accountCreatedAt: user?.metadata.creationTime,
+            ),
             const SizedBox(height: 22),
             Align(
               alignment: Alignment.centerLeft,
@@ -224,9 +227,13 @@ class _ProfileName extends StatelessWidget {
 }
 
 class _StatsRow extends StatelessWidget {
-  const _StatsRow({required this.statsRef});
+  const _StatsRow({
+    required this.statsRef,
+    required this.accountCreatedAt,
+  });
 
   final DatabaseReference? statsRef;
+  final DateTime? accountCreatedAt;
 
   @override
   Widget build(BuildContext context) {
@@ -257,13 +264,20 @@ class _StatsRow extends StatelessWidget {
     return StreamBuilder<DatabaseEvent>(
       stream: statsRef!.onValue,
       builder: (context, snapshot) {
-        final data = snapshot.data?.snapshot.value as Map? ?? {};
-        final trained = (data['trainedDaysCount'] is num)
-            ? (data['trainedDaysCount'] as num).toInt()
-            : 0;
-        final rest = (data['restDaysCount'] is num)
-            ? (data['restDaysCount'] as num).toInt()
-            : 0;
+        final raw = snapshot.data?.snapshot.value;
+        final data = raw is Map ? Map<String, dynamic>.from(raw) : <String, dynamic>{};
+        final trainedRaw = data['trainedDays'];
+        final trainedMap = trainedRaw is Map
+            ? Map<String, dynamic>.from(trainedRaw)
+            : <String, dynamic>{};
+        final trained = trainedMap.length;
+        final rest = _computeRestTotalSinceAccountCreation(
+          accountCreatedAt: accountCreatedAt,
+          trainedTotal: trained,
+          fallback: (data['restDaysCount'] is num)
+              ? (data['restDaysCount'] as num).toInt()
+              : 0,
+        );
 
         return Row(
           children: [
@@ -289,6 +303,25 @@ class _StatsRow extends StatelessWidget {
       },
     );
   }
+}
+
+int _computeRestTotalSinceAccountCreation({
+  required DateTime? accountCreatedAt,
+  required int trainedTotal,
+  required int fallback,
+}) {
+  if (accountCreatedAt == null) return fallback;
+  final now = DateTime.now();
+  final created = DateTime(
+    accountCreatedAt.year,
+    accountCreatedAt.month,
+    accountCreatedAt.day,
+  );
+  final today = DateTime(now.year, now.month, now.day);
+  final elapsedDays = today.difference(created).inDays + 1;
+  if (elapsedDays <= 0) return fallback;
+  final rest = elapsedDays - trainedTotal;
+  return rest >= 0 ? rest : 0;
 }
 
 class _StatCard extends StatelessWidget {
@@ -387,13 +420,22 @@ class _SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final containerColor = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final colorScheme = theme.colorScheme;
+    final containerColor = colorScheme.surfaceContainerHighest;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: containerColor,
         borderRadius: BorderRadius.circular(16),
+        border: isDark
+            ? Border.all(
+                color: colorScheme.outline.withOpacity(0.5),
+                width: 1.2,
+              )
+            : null,
       ),
       child: Wrap(
         spacing: 20,
@@ -456,6 +498,7 @@ class _SettingsItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final outline = theme.colorScheme.outline.withOpacity(0.65);
     final circleColor = isPremium
         ? (isDark ? _premiumGoldDark : _premiumGold)
         : (filled ? theme.colorScheme.primaryContainer : theme.colorScheme.surface);
@@ -478,6 +521,12 @@ class _SettingsItem extends StatelessWidget {
               decoration: BoxDecoration(
                 color: circleColor,
                 shape: BoxShape.circle,
+                border: isDark
+                    ? Border.all(
+                        color: isPremium ? _premiumGold : outline,
+                        width: 1.1,
+                      )
+                    : null,
               ),
               child: Icon(
                 icon,

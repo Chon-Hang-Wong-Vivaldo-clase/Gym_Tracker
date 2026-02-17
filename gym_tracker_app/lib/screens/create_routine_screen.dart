@@ -11,6 +11,7 @@ class CreateRoutineScreen extends StatefulWidget {
 }
 
 class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
+  static const int _freeRoutineLimit = 5;
   final _nameCtrl = TextEditingController();
   final _selected = <ExerciseLite>[];
   bool _saving = false;
@@ -61,16 +62,21 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
       final profile = profileSnap.value is Map
           ? (profileSnap.value as Map)
           : <dynamic, dynamic>{};
-      final isPremium = (profile['isPremium'] ?? false) == true;
+      final isPremium = _isPremiumActive(profile['isPremium']);
 
       final routinesRef = root.child('users/${user.uid}/routines');
       final routinesSnap = await routinesRef.get();
-      final routinesCount = routinesSnap.children.length;
+      final routinesCount = _countValidCreatedRoutines(
+        routinesSnap.children,
+        user.uid,
+      );
 
-      if (!isPremium && routinesCount >= 5) {
+      if (!isPremium && routinesCount >= _freeRoutineLimit) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Límite alcanzado: máximo 5 rutinas"),
+          SnackBar(
+            content: Text(
+              "Límite alcanzado: máximo $_freeRoutineLimit rutinas",
+            ),
           ),
         );
         return;
@@ -119,18 +125,50 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
     }
   }
 
+  bool _isPremiumActive(dynamic raw) {
+    if (raw is bool) return raw;
+    if (raw is num) return raw != 0;
+    if (raw is String) {
+      final value = raw.trim().toLowerCase();
+      return value == 'true' || value == '1' || value == 'yes';
+    }
+    return false;
+  }
+
+  int _countValidCreatedRoutines(
+    Iterable<DataSnapshot> children,
+    String currentUid,
+  ) {
+    var count = 0;
+    for (final child in children) {
+      final raw = child.value;
+      if (raw is! Map) continue;
+      final data = Map<String, dynamic>.from(raw);
+      final name = data['name']?.toString().trim() ?? '';
+      if (name.isEmpty) continue;
+
+      final ownerUid = data['ownerUid']?.toString().trim() ?? '';
+      if (ownerUid.isNotEmpty && ownerUid != currentUid) continue;
+      count += 1;
+    }
+    return count;
+  }
+
   @override
   Widget build(BuildContext context) {
-    const cardBg = Color(0xFFF2F2F2);
-    const dark = Color(0xFF2B2E34);
+    final colorScheme = Theme.of(context).colorScheme;
+    final cardBg = colorScheme.surfaceContainerHighest;
+    final inputBg = colorScheme.surface;
+    final primaryButtonBg = colorScheme.primary;
+    final primaryButtonFg = colorScheme.onPrimary;
+    final secondaryButtonBg = colorScheme.secondaryContainer;
+    final secondaryButtonFg = colorScheme.onSecondaryContainer;
+    final hintColor = colorScheme.onSurfaceVariant;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Crear rutina"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
@@ -155,7 +193,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                     decoration: InputDecoration(
                       hintText: "Nombre de la rutina",
                       filled: true,
-                      fillColor: Colors.white,
+                      fillColor: inputBg,
+                      hintStyle: TextStyle(color: hintColor),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -176,8 +215,8 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                     child: ElevatedButton(
                       onPressed: _addExercise,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6C7075),
-                        foregroundColor: Colors.white,
+                        backgroundColor: secondaryButtonBg,
+                        foregroundColor: secondaryButtonFg,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -200,8 +239,6 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
                 Switch(
                   value: _isPublic,
                   onChanged: (value) => setState(() => _isPublic = value),
-                  activeTrackColor: const Color(0xFF4CAF50),
-                  inactiveTrackColor: const Color(0xFFBDBDBD),
                 ),
               ],
             ),
@@ -212,19 +249,19 @@ class _CreateRoutineScreenState extends State<CreateRoutineScreen> {
               child: ElevatedButton(
                 onPressed: _saving ? null : _createRoutine,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: dark,
-                  foregroundColor: Colors.white,
+                  backgroundColor: primaryButtonBg,
+                  foregroundColor: primaryButtonFg,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
                 child: _saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 22,
                         height: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: primaryButtonFg,
                         ),
                       )
                     : const Text("CREAR"),
@@ -245,10 +282,11 @@ class _SelectedExercisesList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     if (items.isEmpty) {
-      return const Text(
+      return Text(
         "Aún no has añadido ejercicios.",
-        style: TextStyle(color: Colors.black54),
+        style: TextStyle(color: colorScheme.onSurfaceVariant),
       );
     }
 
@@ -259,7 +297,7 @@ class _SelectedExercisesList extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(

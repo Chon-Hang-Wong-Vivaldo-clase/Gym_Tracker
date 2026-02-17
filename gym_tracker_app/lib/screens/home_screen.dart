@@ -153,16 +153,14 @@ class _HomeStatsSection extends StatelessWidget {
         final profileRaw = userData['profile'];
         final profile = profileRaw is Map ? Map<String, dynamic>.from(profileRaw) : <String, dynamic>{};
 
-        final trained = (stats['trainedDaysCount'] is num)
-            ? (stats['trainedDaysCount'] as num).toInt()
-            : 0;
-        final rest = _computeRestDays(stats['lastTrainedAt']?.toString());
         final trainedRaw = stats['trainedDays'];
         final trainedMap = trainedRaw is Map ? trainedRaw : <dynamic, dynamic>{};
         final days = trainedMap.keys
             .map((key) => _parseDateKey(key.toString()))
             .whereType<DateTime>()
             .toSet();
+        final trained = _countCurrentMonthTrainedDays(days);
+        final rest = _countCurrentMonthRestDays(days);
         final restDays = _parseRestDays(profile['restDays']);
         final streakDays = _computeCurrentStreak(
           trainedDays: days,
@@ -284,15 +282,17 @@ DateTime? _parseDateKey(String value) {
   return DateTime(y, m, d);
 }
 
-int _computeRestDays(String? lastTrainedIso) {
-  if (lastTrainedIso == null || lastTrainedIso.trim().isEmpty) return 0;
-  final last = DateTime.tryParse(lastTrainedIso);
-  if (last == null) return 0;
+int _countCurrentMonthTrainedDays(Set<DateTime> trainedDays) {
   final today = DateTime.now();
-  final lastDate = DateTime(last.year, last.month, last.day);
-  final todayDate = DateTime(today.year, today.month, today.day);
-  final diff = todayDate.difference(lastDate).inDays;
-  return diff > 0 ? diff : 0;
+  return trainedDays.where((day) => day.year == today.year && day.month == today.month).length;
+}
+
+int _countCurrentMonthRestDays(Set<DateTime> trainedDays) {
+  final today = DateTime.now();
+  final trainedThisMonth = _countCurrentMonthTrainedDays(trainedDays);
+  final elapsedMonthDays = today.day;
+  final restDays = elapsedMonthDays - trainedThisMonth;
+  return restDays > 0 ? restDays : 0;
 }
 
 Set<int> _parseRestDays(dynamic raw) {

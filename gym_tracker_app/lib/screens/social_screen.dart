@@ -18,7 +18,10 @@ class SocialScreen extends StatelessWidget {
       'users/${FirebaseAuth.instance.currentUser?.uid}/likedRoutines',
     );
 
-    final scaffoldBg = Theme.of(context).scaffoldBackgroundColor;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final isDark = theme.brightness == Brightness.dark;
+    final scaffoldBg = theme.scaffoldBackgroundColor;
     return Scaffold(
       backgroundColor: scaffoldBg,
       endDrawer: const AppEndDrawer(),
@@ -51,8 +54,14 @@ class SocialScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
+                border: isDark
+                    ? Border.all(
+                        color: colorScheme.outline.withOpacity(0.5),
+                        width: 1.2,
+                      )
+                    : null,
               ),
               child: Column(
                 children: [
@@ -71,14 +80,20 @@ class SocialScreen extends StatelessWidget {
                         width: 34,
                         height: 34,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
+                          color: colorScheme.primaryContainer,
                           shape: BoxShape.circle,
+                          border: isDark
+                              ? Border.all(
+                                  color: colorScheme.outline.withOpacity(0.7),
+                                  width: 1.0,
+                                )
+                              : null,
                         ),
                         child: IconButton(
                           padding: EdgeInsets.zero,
                           icon: Icon(
                             Icons.person_add,
-                            color: Theme.of(context).colorScheme.onPrimaryContainer,
+                            color: colorScheme.onPrimaryContainer,
                           ),
                           onPressed: () => _openSearch(context),
                         ),
@@ -165,10 +180,11 @@ class SocialScreen extends StatelessWidget {
   }
 
   void _openSearch(BuildContext context) {
+    final rootContext = context;
     final controller = TextEditingController();
     showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
+      context: rootContext,
+      builder: (dialogContext) => AlertDialog(
         title: const Text("Buscar usuario"),
         content: TextField(
           controller: controller,
@@ -176,7 +192,7 @@ class SocialScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text("Cancelar"),
           ),
           ElevatedButton(
@@ -187,24 +203,46 @@ class SocialScreen extends StatelessWidget {
                   .toLowerCase();
 
               final usersRef = FirebaseDatabase.instance.ref('users');
-              final query = usersRef
-                  .orderByChild('profile/username')
-                  .equalTo(username);
-              final snap = await query.get();
+              final snap = await usersRef.get();
 
-              if (!context.mounted) return;
-              if (!snap.exists || snap.children.isEmpty) {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
+              if (!dialogContext.mounted || !rootContext.mounted) return;
+
+              final matches = <DataSnapshot>[];
+              for (final userSnap in snap.children) {
+                final raw = userSnap.value;
+                if (raw is! Map) continue;
+                final data = Map<String, dynamic>.from(raw);
+                final profileRaw = data['profile'];
+                if (profileRaw is! Map) continue;
+                final profile = Map<String, dynamic>.from(profileRaw);
+                final foundUsername =
+                    profile['username']?.toString().trim().toLowerCase();
+                if (foundUsername == username) {
+                  matches.add(userSnap);
+                }
+              }
+
+              if (matches.isEmpty) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(rootContext).showSnackBar(
                   const SnackBar(content: Text("Ese usuario no existe")),
                 );
                 return;
               }
 
-              final userSnap = snap.children.first;
-              final data = userSnap.value as Map? ?? {};
-              final profile = data['profile'] as Map? ?? {};
-              final stats = data['stats'] as Map? ?? {};
+              final userSnap = matches.first;
+              final rawData = userSnap.value;
+              final data = rawData is Map
+                  ? Map<String, dynamic>.from(rawData)
+                  : <String, dynamic>{};
+              final profileRaw = data['profile'];
+              final profile = profileRaw is Map
+                  ? Map<String, dynamic>.from(profileRaw)
+                  : <String, dynamic>{};
+              final statsRaw = data['stats'];
+              final stats = statsRaw is Map
+                  ? Map<String, dynamic>.from(statsRaw)
+                  : <String, dynamic>{};
               final display = profile['username']?.toString() ?? username;
               final photoUrl = profile['photoUrl']?.toString();
               final trained = (stats['trainedDaysCount'] is num)
@@ -214,9 +252,26 @@ class SocialScreen extends StatelessWidget {
                   ? (stats['restDaysCount'] as num).toInt()
                   : 0;
               final targetUid = userSnap.key?.toString() ?? '';
+              final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
+              if (targetUid.isEmpty) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(rootContext).showSnackBar(
+                  const SnackBar(content: Text("No se pudo abrir ese perfil")),
+                );
+                return;
+              }
+
+              if (targetUid == currentUid) {
+                Navigator.of(dialogContext).pop();
+                ScaffoldMessenger.of(rootContext).showSnackBar(
+                  const SnackBar(content: Text("Ese es tu perfil")),
+                );
+                return;
+              }
+
+              Navigator.of(dialogContext).pop();
+              Navigator.of(rootContext).push(
                 MaterialPageRoute(
                   builder: (_) => SocialUserProfileScreen(
                     userId: targetUid,
@@ -264,13 +319,20 @@ class _FriendTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final surface = theme.colorScheme.surface;
     final onSurface = theme.colorScheme.onSurface;
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final outline = theme.colorScheme.outline.withOpacity(0.55);
 
     return Material(
       color: surface,
-      borderRadius: BorderRadius.circular(14),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(14),
+        side: isDark
+            ? BorderSide(color: outline, width: 1.1)
+            : BorderSide.none,
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),

@@ -20,15 +20,13 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final catalogRef = FirebaseDatabase.instance.ref('exerciseCatalog/api_ninjas');
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Lista de ejercicios"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
         child: Column(
@@ -41,7 +39,7 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
                     decoration: InputDecoration(
                       hintText: "Nombre del ejercicio",
                       filled: true,
-                      fillColor: const Color(0xFFF2F2F2),
+                      fillColor: colorScheme.surfaceContainerHighest,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(999),
                         borderSide: BorderSide.none,
@@ -82,10 +80,10 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
                   final filtered = _applyFilters(list);
 
                   if (filtered.isEmpty) {
-                    return const Center(
+                    return Center(
                       child: Text(
                         "No hay ejercicios con ese filtro",
-                        style: TextStyle(color: Colors.black54),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                     );
                   }
@@ -100,8 +98,8 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
                         child: ElevatedButton(
                           onPressed: () => Navigator.of(context).pop(ex),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF6C7075),
-                            foregroundColor: Colors.white,
+                            backgroundColor: colorScheme.secondaryContainer,
+                            foregroundColor: colorScheme.onSecondaryContainer,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
@@ -125,6 +123,7 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
   }
 
   void _openFilter() {
+    final colorScheme = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -147,9 +146,11 @@ class _ExercisePickerScreenState extends State<ExercisePickerScreen> {
                     _selectedMuscle = value ? muscle : null;
                   });
                 },
-                selectedColor: const Color(0xFF2B2E34),
+                selectedColor: colorScheme.primaryContainer,
                 labelStyle: TextStyle(
-                  color: selected ? Colors.white : Colors.black87,
+                  color: selected
+                      ? colorScheme.onPrimaryContainer
+                      : colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               );
@@ -216,11 +217,12 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Chip(
       label: Text(label),
       deleteIcon: const Icon(Icons.close, size: 16),
       onDeleted: onClear,
-      backgroundColor: const Color(0xFFE0E0E0),
+      backgroundColor: colorScheme.secondaryContainer,
     );
   }
 }

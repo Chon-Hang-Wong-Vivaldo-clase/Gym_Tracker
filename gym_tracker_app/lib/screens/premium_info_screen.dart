@@ -36,7 +36,7 @@ class PremiumInfoScreen extends StatelessWidget {
               builder: (context, snapshot) {
                 final raw = snapshot.data?.snapshot.value;
                 final data = raw is Map ? raw : <dynamic, dynamic>{};
-                final isSubscribed = (data['isPremium'] ?? false) == true;
+                final isSubscribed = _isPremiumActive(data['isPremium']);
 
                 return ListView(
                   shrinkWrap: true,
@@ -74,6 +74,16 @@ class PremiumInfoScreen extends StatelessWidget {
             ),
     );
   }
+}
+
+bool _isPremiumActive(dynamic raw) {
+  if (raw is bool) return raw;
+  if (raw is num) return raw != 0;
+  if (raw is String) {
+    final value = raw.trim().toLowerCase();
+    return value == 'true' || value == '1' || value == 'yes';
+  }
+  return false;
 }
 
 class _SubscriptionActiveBanner extends StatelessWidget {

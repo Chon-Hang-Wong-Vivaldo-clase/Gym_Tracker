@@ -7,15 +7,13 @@ class RoutineDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final exercises = detail.exercises ?? const [];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("Rutina"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
         child: Column(
@@ -47,10 +45,10 @@ class RoutineDetailScreen extends StatelessWidget {
             const SizedBox(height: 8),
             Expanded(
               child: exercises.isEmpty
-                  ? const Center(
+                  ? Center(
                       child: Text(
                         "No hay ejercicios para mostrar.",
-                        style: TextStyle(color: Colors.black54),
+                        style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                     )
                   : ListView.separated(
@@ -65,7 +63,7 @@ class RoutineDetailScreen extends StatelessWidget {
                             vertical: 10,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF2F2F2),
+                            color: colorScheme.surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -116,15 +114,20 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFE0E0E0),
+        color: colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
         label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: colorScheme.onSecondaryContainer,
+        ),
       ),
     );
   }

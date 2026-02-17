@@ -9,13 +9,12 @@ class RoutinesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Mis rutinas"),
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
           bottom: const TabBar(
             tabs: [
               Tab(text: "Creadas"),
@@ -23,7 +22,7 @@ class RoutinesScreen extends StatelessWidget {
             ],
           ),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         body: const TabBarView(
           children: [_CreatedRoutinesTab(), _LikedRoutinesTab()],
         ),
@@ -54,10 +53,11 @@ class _CreatedRoutinesTab extends StatelessWidget {
       builder: (context, snapshot) {
         final items = _mapRoutineList(snapshot.data?.snapshot.value);
         if (items.isEmpty) {
-          return const Center(
+          final onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
+          return Center(
             child: Text(
               "Aún no has creado rutinas",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: onSurfaceVariant),
             ),
           );
         }
@@ -116,10 +116,11 @@ class _LikedRoutinesTab extends StatelessWidget {
       builder: (context, snapshot) {
         final items = _mapRoutineList(snapshot.data?.snapshot.value);
         if (items.isEmpty) {
-          return const Center(
+          final onSurfaceVariant = Theme.of(context).colorScheme.onSurfaceVariant;
+          return Center(
             child: Text(
               "Aún no has dado likes",
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: onSurfaceVariant),
             ),
           );
         }
@@ -168,6 +169,8 @@ class _RoutineCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final onSurfaceVariant = colorScheme.onSurfaceVariant;
     final subtitle = [
       if (item.exercisesCount != null) '${item.exercisesCount} ejercicios',
       item.isPublic == true ? 'Pública' : 'Privada',
@@ -176,7 +179,7 @@ class _RoutineCard extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: const Color(0xFFF5F5F5),
+      color: colorScheme.surfaceContainerHighest,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -193,7 +196,7 @@ class _RoutineCard extends StatelessWidget {
                 onPressed: onLikeToggle,
                 icon: Icon(
                   isLiked ? Icons.favorite : Icons.favorite_border,
-                  color: isLiked ? const Color(0xFFE53935) : Colors.black54,
+                  color: isLiked ? const Color(0xFFE53935) : onSurfaceVariant,
                 ),
               ),
             const Icon(Icons.chevron_right),

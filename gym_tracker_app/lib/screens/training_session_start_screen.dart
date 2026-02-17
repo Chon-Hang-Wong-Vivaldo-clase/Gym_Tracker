@@ -8,15 +8,19 @@ class TrainingSessionStartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text("Iniciar sesión"),
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.white,
         ),
-        body: const Center(child: Text("No hay sesión activa")),
+        body: Center(
+          child: Text(
+            "No hay sesión activa",
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
+          ),
+        ),
       );
     }
 
@@ -25,19 +29,16 @@ class TrainingSessionStartScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Elegir rutina"),
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
       ),
-      backgroundColor: Colors.white,
       body: StreamBuilder<DatabaseEvent>(
         stream: userRef.onValue,
         builder: (context, snapshot) {
           final items = _mapAvailableRoutines(snapshot.data?.snapshot.value);
           if (items.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 "No tienes rutinas creadas ni con like",
-                style: TextStyle(color: Colors.black54),
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
             );
           }
@@ -50,7 +51,7 @@ class TrainingSessionStartScreen extends StatelessWidget {
               final routine = items[index];
               return Card(
                 elevation: 0,
-                color: const Color(0xFFF5F5F5),
+                color: colorScheme.surfaceContainerHighest,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
