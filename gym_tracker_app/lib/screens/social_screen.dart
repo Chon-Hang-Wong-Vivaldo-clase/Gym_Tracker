@@ -179,117 +179,232 @@ class SocialScreen extends StatelessWidget {
     );
   }
 
-  void _openSearch(BuildContext context) {
-    final rootContext = context;
-    final controller = TextEditingController();
-    showDialog<void>(
-      context: rootContext,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text("Buscar usuario"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(hintText: "@usuario"),
+  Future<void> _openSearch(BuildContext context) async {
+    final selectedUser = await showModalBottomSheet<_UserSearchResult>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => const _SocialUserSearchSheet(),
+    );
+    if (!context.mounted || selectedUser == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SocialUserProfileScreen(
+          userId: selectedUser.userId,
+          username: selectedUser.username,
+          photoUrl: selectedUser.photoUrl,
+          trainedDays: selectedUser.trainedDays,
+          restDays: selectedUser.restDays,
+          routines: const [],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text("Cancelar"),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              final input = controller.text.trim();
-              if (input.isEmpty) return;
-              final username = (input.startsWith("@") ? input : "@$input")
-                  .toLowerCase();
-
-              final usersRef = FirebaseDatabase.instance.ref('users');
-              final snap = await usersRef.get();
-
-              if (!dialogContext.mounted || !rootContext.mounted) return;
-
-              final matches = <DataSnapshot>[];
-              for (final userSnap in snap.children) {
-                final raw = userSnap.value;
-                if (raw is! Map) continue;
-                final data = Map<String, dynamic>.from(raw);
-                final profileRaw = data['profile'];
-                if (profileRaw is! Map) continue;
-                final profile = Map<String, dynamic>.from(profileRaw);
-                final foundUsername =
-                    profile['username']?.toString().trim().toLowerCase();
-                if (foundUsername == username) {
-                  matches.add(userSnap);
-                }
-              }
-
-              if (matches.isEmpty) {
-                Navigator.of(dialogContext).pop();
-                ScaffoldMessenger.of(rootContext).showSnackBar(
-                  const SnackBar(content: Text("Ese usuario no existe")),
-                );
-                return;
-              }
-
-              final userSnap = matches.first;
-              final rawData = userSnap.value;
-              final data = rawData is Map
-                  ? Map<String, dynamic>.from(rawData)
-                  : <String, dynamic>{};
-              final profileRaw = data['profile'];
-              final profile = profileRaw is Map
-                  ? Map<String, dynamic>.from(profileRaw)
-                  : <String, dynamic>{};
-              final statsRaw = data['stats'];
-              final stats = statsRaw is Map
-                  ? Map<String, dynamic>.from(statsRaw)
-                  : <String, dynamic>{};
-              final display = profile['username']?.toString() ?? username;
-              final photoUrl = profile['photoUrl']?.toString();
-              final trained = (stats['trainedDaysCount'] is num)
-                  ? (stats['trainedDaysCount'] as num).toInt()
-                  : 0;
-              final rest = (stats['restDaysCount'] is num)
-                  ? (stats['restDaysCount'] as num).toInt()
-                  : 0;
-              final targetUid = userSnap.key?.toString() ?? '';
-              final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
-
-              if (targetUid.isEmpty) {
-                Navigator.of(dialogContext).pop();
-                ScaffoldMessenger.of(rootContext).showSnackBar(
-                  const SnackBar(content: Text("No se pudo abrir ese perfil")),
-                );
-                return;
-              }
-
-              if (targetUid == currentUid) {
-                Navigator.of(dialogContext).pop();
-                ScaffoldMessenger.of(rootContext).showSnackBar(
-                  const SnackBar(content: Text("Ese es tu perfil")),
-                );
-                return;
-              }
-
-              Navigator.of(dialogContext).pop();
-              Navigator.of(rootContext).push(
-                MaterialPageRoute(
-                  builder: (_) => SocialUserProfileScreen(
-                    userId: targetUid,
-                    username: display,
-                    photoUrl: photoUrl,
-                    trainedDays: trained,
-                    restDays: rest,
-                    routines: const [],
-                  ),
-                ),
-              );
-            },
-            child: const Text("Buscar"),
-          ),
-        ],
       ),
     );
   }
+}
+
+class _SocialUserSearchSheet extends StatefulWidget {
+  const _SocialUserSearchSheet();
+
+  @override
+  State<_SocialUserSearchSheet> createState() => _SocialUserSearchSheetState();
+}
+
+class _SocialUserSearchSheetState extends State<_SocialUserSearchSheet> {
+  final TextEditingController _controller = TextEditingController();
+  String _query = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String _normalizeQuery(String value) {
+    final trimmed = value.trim().toLowerCase();
+    if (trimmed.isEmpty) return '';
+    return trimmed.startsWith('@') ? trimmed : '@$trimmed';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final normalized = _normalizeQuery(_query);
+    final currentUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final usersRef = FirebaseDatabase.instance.ref('users');
+    final query = normalized.isEmpty
+        ? null
+        : usersRef
+              .orderByChild('profile/username')
+              .startAt(normalized)
+              .endAt('$normalized\uf8ff')
+              .limitToFirst(20);
+
+    return SafeArea(
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            8,
+            16,
+            12 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Buscar usuario',
+                style: TextStyle(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 17,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _controller,
+                autofocus: true,
+                onChanged: (value) => setState(() => _query = value),
+                decoration: InputDecoration(
+                  hintText: '@usuario',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerHighest,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: query == null
+                    ? Center(
+                        child: Text(
+                          'Escribe para buscar usuarios',
+                          style: TextStyle(color: colorScheme.onSurfaceVariant),
+                        ),
+                      )
+                    : StreamBuilder<DatabaseEvent>(
+                        stream: query.onValue,
+                        builder: (context, snapshot) {
+                          final results = _mapUserSearchResults(
+                            snapshot.data?.snapshot.value,
+                            currentUid: currentUid,
+                          );
+                          if (results.isEmpty) {
+                            return Center(
+                              child: Text(
+                                'No hay usuarios con ese texto',
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            );
+                          }
+                          return ListView.separated(
+                            itemCount: results.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 8),
+                            itemBuilder: (context, index) {
+                              final user = results[index];
+                              return Material(
+                                color: colorScheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(12),
+                                child: ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: colorScheme.surface,
+                                    backgroundImage: user.photoUrl == null
+                                        ? null
+                                        : NetworkImage(user.photoUrl!),
+                                    child: user.photoUrl == null
+                                        ? Icon(
+                                            Icons.person,
+                                            color: colorScheme.onSurfaceVariant,
+                                          )
+                                        : null,
+                                  ),
+                                  title: Text(user.username),
+                                  subtitle: Text(
+                                    '${user.trainedDays} entrenados · ${user.restDays} descanso',
+                                  ),
+                                  trailing: const Icon(Icons.chevron_right),
+                                  onTap: () => Navigator.of(context).pop(user),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _UserSearchResult {
+  const _UserSearchResult({
+    required this.userId,
+    required this.username,
+    required this.photoUrl,
+    required this.trainedDays,
+    required this.restDays,
+  });
+
+  final String userId;
+  final String username;
+  final String? photoUrl;
+  final int trainedDays;
+  final int restDays;
+}
+
+List<_UserSearchResult> _mapUserSearchResults(
+  Object? raw, {
+  required String currentUid,
+}) {
+  if (raw is! Map) return const [];
+  final results = <_UserSearchResult>[];
+  for (final entry in raw.entries) {
+    final uid = entry.key.toString();
+    if (uid.isEmpty || uid == currentUid) continue;
+    final value = entry.value;
+    if (value is! Map) continue;
+
+    final data = Map<String, dynamic>.from(value);
+    final profileRaw = data['profile'];
+    final profile = profileRaw is Map
+        ? Map<String, dynamic>.from(profileRaw)
+        : <String, dynamic>{};
+    final username = profile['username']?.toString().trim() ?? '';
+    if (username.isEmpty) continue;
+
+    final statsRaw = data['stats'];
+    final stats = statsRaw is Map
+        ? Map<String, dynamic>.from(statsRaw)
+        : <String, dynamic>{};
+    final trainedDays = _getTrainedTotalFromStats(stats);
+    final restDays = _computeRestTotalFromCreatedAt(
+      createdAtRaw: profile['createdAt'],
+      trainedTotal: trainedDays,
+      fallback: (stats['restDaysCount'] is num)
+          ? (stats['restDaysCount'] as num).toInt()
+          : 0,
+    );
+
+    results.add(
+      _UserSearchResult(
+        userId: uid,
+        username: username,
+        photoUrl: profile['photoUrl']?.toString(),
+        trainedDays: trainedDays,
+        restDays: restDays,
+      ),
+    );
+  }
+  results.sort((a, b) => a.username.toLowerCase().compareTo(b.username.toLowerCase()));
+  return results;
 }
 
 class _Friend {
@@ -453,12 +568,14 @@ class _FollowingTile extends StatelessWidget {
         final presence = data['presence'] as Map? ?? {};
         final username = profile['username']?.toString() ?? '@usuario';
         final photoUrl = profile['photoUrl']?.toString();
-        final trained = (stats['trainedDaysCount'] is num)
-            ? (stats['trainedDaysCount'] as num).toInt()
-            : 0;
-        final rest = (stats['restDaysCount'] is num)
-            ? (stats['restDaysCount'] as num).toInt()
-            : 0;
+        final trained = _getTrainedTotalFromStats(stats);
+        final rest = _computeRestTotalFromCreatedAt(
+          createdAtRaw: profile['createdAt'],
+          trainedTotal: trained,
+          fallback: (stats['restDaysCount'] is num)
+              ? (stats['restDaysCount'] as num).toInt()
+              : 0,
+        );
         final state = presence['state']?.toString() ?? 'offline';
         final isOnline = state == 'online';
 
@@ -628,4 +745,43 @@ void _openDetail(BuildContext context, PublicRoutineItem routine) {
       ),
     ),
   );
+}
+
+int _getTrainedTotalFromStats(Map<dynamic, dynamic> stats) {
+  final trainedRaw = stats['trainedDays'];
+  if (trainedRaw is Map) return trainedRaw.length;
+  if (stats['trainedDaysCount'] is num) {
+    return (stats['trainedDaysCount'] as num).toInt();
+  }
+  return 0;
+}
+
+int _computeRestTotalFromCreatedAt({
+  required dynamic createdAtRaw,
+  required int trainedTotal,
+  required int fallback,
+}) {
+  final createdAt = _parseCreatedAt(createdAtRaw);
+  if (createdAt == null) return fallback;
+
+  final now = DateTime.now();
+  final createdDate = DateTime(createdAt.year, createdAt.month, createdAt.day);
+  final today = DateTime(now.year, now.month, now.day);
+  final elapsedDays = today.difference(createdDate).inDays + 1;
+  if (elapsedDays <= 0) return fallback;
+  final rest = elapsedDays - trainedTotal;
+  return rest >= 0 ? rest : 0;
+}
+
+DateTime? _parseCreatedAt(dynamic raw) {
+  if (raw is int) {
+    return DateTime.fromMillisecondsSinceEpoch(raw);
+  }
+  if (raw is num) {
+    return DateTime.fromMillisecondsSinceEpoch(raw.toInt());
+  }
+  if (raw is String) {
+    return DateTime.tryParse(raw);
+  }
+  return null;
 }

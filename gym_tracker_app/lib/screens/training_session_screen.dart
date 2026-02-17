@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:gym_tracker_app/screens/training_session_start_screen.dart';
 import 'package:gym_tracker_app/screens/training_summary_screen.dart';
 import 'package:gym_tracker_app/services/training_session_service.dart';
@@ -424,7 +425,10 @@ class _SetRowState extends State<_SetRow> {
           Expanded(
             child: TextField(
               controller: _weightCtrl,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                _WeightInputFormatter(),
+              ],
               decoration: InputDecoration(
                 hintText: "Kg",
                 filled: true,
@@ -450,7 +454,8 @@ class _SetRowState extends State<_SetRow> {
                 ),
               ),
               onChanged: (value) {
-                final weight = double.tryParse(value);
+                final normalized = value.replaceAll(',', '.');
+                final weight = double.tryParse(normalized);
                 widget.onChanged(widget.set.copyWith(weight: weight));
               },
             ),
@@ -507,5 +512,20 @@ class WorkoutSet {
       reps: reps ?? this.reps,
       weight: weight ?? this.weight,
     );
+  }
+}
+
+class _WeightInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    if (text.isEmpty) return newValue;
+
+    // Allow digits plus only one decimal separator (comma or dot).
+    final valid = RegExp(r'^\d*([.,]\d*)?$').hasMatch(text);
+    return valid ? newValue : oldValue;
   }
 }
