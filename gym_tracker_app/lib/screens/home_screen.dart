@@ -1,3 +1,4 @@
+/// mostrar el panel principal con resumen de actividad.
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';

@@ -1,3 +1,4 @@
+/// arrancar la aplicacion y registrar configuraciones globales.
 import 'dart:async';
 
 import 'package:flutter/material.dart';

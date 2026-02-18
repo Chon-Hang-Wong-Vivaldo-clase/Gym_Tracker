@@ -1,3 +1,4 @@
+/// encapsular llamadas a la API externa de ejercicios.
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;

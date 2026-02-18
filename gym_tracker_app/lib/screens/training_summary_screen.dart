@@ -1,3 +1,4 @@
+/// resumir resultados al finalizar una sesion de entrenamiento.
 import 'package:flutter/material.dart';
 
 class TrainingSummaryScreen extends StatelessWidget {

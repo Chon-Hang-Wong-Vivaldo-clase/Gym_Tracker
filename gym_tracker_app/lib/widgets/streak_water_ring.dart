@@ -1,3 +1,4 @@
+/// visualizar la racha con un indicador circular de progreso.
 import 'dart:math';
 import 'package:flutter/material.dart';
 

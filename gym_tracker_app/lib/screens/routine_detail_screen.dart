@@ -1,3 +1,4 @@
+/// mostrar el detalle completo de una rutina seleccionada.
 import 'package:flutter/material.dart';
 
 class RoutineDetailScreen extends StatelessWidget {

@@ -1,3 +1,4 @@
+/// mostrar terminos y condiciones de uso de la aplicacion.
 import 'package:flutter/material.dart';
 
 class TermsConditionsScreen extends StatelessWidget {

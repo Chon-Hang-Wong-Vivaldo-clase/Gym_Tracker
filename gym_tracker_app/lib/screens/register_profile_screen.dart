@@ -1,3 +1,4 @@
+/// capturar datos de perfil durante el registro de usuario.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker_app/providers/auth_form_provider.dart';

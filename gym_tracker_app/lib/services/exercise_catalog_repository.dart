@@ -1,3 +1,4 @@
+/// proveer acceso unificado al catalogo de ejercicios.
 import 'package:firebase_database/firebase_database.dart';
 import 'package:gym_tracker_app/models/exercise.dart';
 

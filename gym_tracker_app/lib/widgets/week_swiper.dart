@@ -1,3 +1,4 @@
+/// permitir navegar semanas y mostrar datos semanales.
 import 'package:flutter/material.dart';
 
 class WeekSwiper extends StatefulWidget {

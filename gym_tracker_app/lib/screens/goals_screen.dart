@@ -1,3 +1,4 @@
+/// visualizar y administrar metas de entrenamiento del usuario.
 import 'dart:convert';
 
 import 'package:flutter/material.dart';

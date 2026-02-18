@@ -1,3 +1,4 @@
+/// representar una tarjeta reutilizable de estadisticas.
 import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {

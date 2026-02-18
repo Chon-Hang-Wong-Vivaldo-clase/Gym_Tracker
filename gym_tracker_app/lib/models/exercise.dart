@@ -1,3 +1,4 @@
+/// definir el modelo de datos de un ejercicio y su serializacion.
 class Exercise {
   Exercise({
     required this.idSource,

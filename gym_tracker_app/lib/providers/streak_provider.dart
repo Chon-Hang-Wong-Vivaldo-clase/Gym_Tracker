@@ -1,3 +1,4 @@
+/// calcular y exponer la racha de entrenamiento del usuario.
 import 'package:flutter/foundation.dart';
 
 class StreakProvider extends ChangeNotifier {

@@ -1,3 +1,4 @@
+/// gestionar la ejecucion de una sesion de entrenamiento activa.
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';

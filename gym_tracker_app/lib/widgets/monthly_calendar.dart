@@ -1,3 +1,4 @@
+/// renderizar la vista mensual del calendario de actividad.
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 

@@ -1,3 +1,4 @@
+/// persistir y consultar datos de sesiones de entrenamiento.
 import 'package:firebase_database/firebase_database.dart';
 
 class TrainingSessionService {

@@ -1,3 +1,4 @@
+/// gestionar el estado de autenticacion y la sesion del usuario.
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';

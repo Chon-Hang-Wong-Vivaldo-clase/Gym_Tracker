@@ -1,3 +1,4 @@
+/// centralizar exportaciones de widgets reutilizables.
 export 'package:gym_tracker_app/widgets/month_insights.dart';
 export 'package:gym_tracker_app/widgets/monthly_calendar.dart';
 export 'package:gym_tracker_app/widgets/streak_water_ring.dart';

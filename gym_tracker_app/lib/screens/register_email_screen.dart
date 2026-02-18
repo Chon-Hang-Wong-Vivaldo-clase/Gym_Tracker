@@ -1,3 +1,4 @@
+/// registrar una cuenta nueva mediante correo electronico.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:gym_tracker_app/providers/auth_form_provider.dart';

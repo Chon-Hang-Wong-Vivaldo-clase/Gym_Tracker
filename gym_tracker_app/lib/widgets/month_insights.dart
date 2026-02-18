@@ -1,3 +1,4 @@
+/// mostrar metricas y resumenes del mes de entrenamiento.
 import 'package:flutter/material.dart';
 
 class MonthInsights extends StatefulWidget {
