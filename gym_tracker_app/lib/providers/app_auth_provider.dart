@@ -99,7 +99,6 @@ class AppAuthProvider extends ChangeNotifier with WidgetsBindingObserver {
     return false;
   }
 
-  // EMAIL LOGIN
   Future<String> signInWithEmail(String email, String password) async {
     try {
       final cred = await _auth.signInWithEmailAndPassword(
@@ -116,7 +115,6 @@ class AppAuthProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // GOOGLE LOGIN
   Future<GoogleResult> signInWithGoogleCheck() async {
     try {
       UserCredential userCred;
@@ -130,7 +128,8 @@ class AppAuthProvider extends ChangeNotifier with WidgetsBindingObserver {
 
         final googleAuth = await googleUser.authentication;
         final hasToken =
-            (googleAuth.accessToken != null && googleAuth.accessToken!.isNotEmpty) ||
+            (googleAuth.accessToken != null &&
+                googleAuth.accessToken!.isNotEmpty) ||
             (googleAuth.idToken != null && googleAuth.idToken!.isNotEmpty);
         if (!hasToken) {
           throw FirebaseAuthException(
@@ -159,16 +158,12 @@ class AppAuthProvider extends ChangeNotifier with WidgetsBindingObserver {
   Future<void> signOut() async {
     try {
       await _setOffline();
-    } catch (_) {
-      // Presence is best-effort; do not block logout.
-    }
+    } catch (_) {}
 
     if (!kIsWeb) {
       try {
         await GoogleSignIn().signOut();
-      } catch (_) {
-        // Ignore provider-specific sign-out failures.
-      }
+      } catch (_) {}
     }
 
     await _auth.signOut();

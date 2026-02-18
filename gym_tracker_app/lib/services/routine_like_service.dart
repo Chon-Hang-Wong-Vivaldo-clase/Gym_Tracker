@@ -15,15 +15,14 @@ class RoutineLikeService {
     final safeLikes = nextLikes < 0 ? 0 : nextLikes;
 
     final updates = <String, Object?>{
-      'users/$userUid/likedRoutines/$routineId':
-          isLiked ? null : _likedPayload(routineData, safeLikes),
+      'users/$userUid/likedRoutines/$routineId': isLiked
+          ? null
+          : _likedPayload(routineData, safeLikes),
     };
 
-    // Update owner's routine like count.
     updates['users/${routineData.ownerUid}/routines/$routineId/likesCount'] =
         safeLikes;
 
-    // If routine is public, also update the public index.
     if (routineData.isPublic == true) {
       updates['publicRoutines/$routineId/likesCount'] = safeLikes;
     }
@@ -31,10 +30,7 @@ class RoutineLikeService {
     await root.update(updates);
   }
 
-  static Map<String, Object?> _likedPayload(
-    RoutineLikeData data,
-    int likes,
-  ) {
+  static Map<String, Object?> _likedPayload(RoutineLikeData data, int likes) {
     return {
       'routine': {
         'name': data.name,

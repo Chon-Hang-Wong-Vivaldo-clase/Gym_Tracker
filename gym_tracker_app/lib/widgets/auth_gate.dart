@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import '../screens/screens.dart';
-import '../widgets/widgets.dart'; // si AppShell está ahí
+import '../widgets/widgets.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -24,7 +24,9 @@ class AuthGate extends StatelessWidget {
 
         final user = snapshot.data!;
         return FutureBuilder<DataSnapshot>(
-          future: FirebaseDatabase.instance.ref('users/${user.uid}/profile').get(),
+          future: FirebaseDatabase.instance
+              .ref('users/${user.uid}/profile')
+              .get(),
           builder: (context, profileSnap) {
             if (profileSnap.connectionState == ConnectionState.waiting) {
               return const Scaffold(

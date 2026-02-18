@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
 
 class WeekSwiper extends StatefulWidget {
-  const WeekSwiper({
-    super.key,
-    this.initialDate,
-    required this.onDateSelected,
-  });
+  const WeekSwiper({super.key, this.initialDate, required this.onDateSelected});
 
   final DateTime? initialDate;
   final ValueChanged<DateTime> onDateSelected;
@@ -30,11 +26,13 @@ class _WeekSwiperState extends State<WeekSwiper> {
     });
   }
 
-  // Quita horas/min/seg para comparar bien
   DateTime _onlyDate(DateTime d) => DateTime(d.year, d.month, d.day);
 
   List<DateTime> _buildWeekCenteredOn(DateTime center) {
-    return List.generate(7, (i) => _onlyDate(center.add(Duration(days: i - 3))));
+    return List.generate(
+      7,
+      (i) => _onlyDate(center.add(Duration(days: i - 3))),
+    );
   }
 
   String _weekdayLetter(DateTime d) {
@@ -73,7 +71,9 @@ class _WeekSwiperState extends State<WeekSwiper> {
           final onSurface = theme.colorScheme.onSurface;
           final isDark = theme.brightness == Brightness.dark;
           final selectedBg = selected
-              ? (isDark ? theme.colorScheme.surfaceContainerHighest : const Color(0xFF2B2E34))
+              ? (isDark
+                    ? theme.colorScheme.surfaceContainerHighest
+                    : const Color(0xFF2B2E34))
               : Colors.transparent;
           final selectedFg = selected
               ? (isDark ? onSurface : Colors.white)
@@ -106,7 +106,9 @@ class _WeekSwiperState extends State<WeekSwiper> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: selected ? selectedFg : onSurface.withOpacity(0.85),
+                      color: selected
+                          ? selectedFg
+                          : onSurface.withOpacity(0.85),
                     ),
                   ),
                 ],

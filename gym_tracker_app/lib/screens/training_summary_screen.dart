@@ -18,9 +18,7 @@ class TrainingSummaryScreen extends StatelessWidget {
     final sec = duration.inSeconds % 60;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Sesión completada"),
-      ),
+      appBar: AppBar(title: const Text("Sesión completada")),
       backgroundColor: colorScheme.surface,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),

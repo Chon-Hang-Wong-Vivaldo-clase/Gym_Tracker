@@ -26,11 +26,14 @@ class MonthlyWorkoutCalendar extends StatelessWidget {
     final onSurface = theme.colorScheme.onSurface;
     final surface = theme.colorScheme.surface;
 
-    // Colores que se ven en ambos temas (invertidos en oscuro)
     final todayColor = isDark ? onSurface : Colors.black;
     final todayTextColor = isDark ? surface : Colors.white;
-    final streakColor = isDark ? const Color(0xFF757575) : const Color(0xFFB0B0B0);
-    final plannedColor = isDark ? const Color(0xFF5C5C5C) : const Color(0xFFE0E0E0);
+    final streakColor = isDark
+        ? const Color(0xFF757575)
+        : const Color(0xFFB0B0B0);
+    final plannedColor = isDark
+        ? const Color(0xFF5C5C5C)
+        : const Color(0xFFE0E0E0);
     final defaultTextColor = onSurface;
     final outsideTextColor = onSurface.withOpacity(0.4);
     final legendLabelColor = theme.colorScheme.onSurfaceVariant;
@@ -244,10 +247,7 @@ class _LegendItem extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(fontSize: 12, color: labelColor),
-        ),
+        Text(label, style: TextStyle(fontSize: 12, color: labelColor)),
       ],
     );
   }

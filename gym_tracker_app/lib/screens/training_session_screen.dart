@@ -47,14 +47,14 @@ class _TrainingSessionScreenState extends State<TrainingSessionScreen> {
   void _ensureSetsForCurrent() {
     final list = _setsByExercise[_exerciseIndex] ?? <WorkoutSet>[];
     if (list.isEmpty) {
-      _setsByExercise[_exerciseIndex] =
-          List.generate(_setsCount, (index) => WorkoutSet());
+      _setsByExercise[_exerciseIndex] = List.generate(
+        _setsCount,
+        (index) => WorkoutSet(),
+      );
       return;
     }
     if (_setsCount > list.length) {
-      list.addAll(
-        List.generate(_setsCount - list.length, (_) => WorkoutSet()),
-      );
+      list.addAll(List.generate(_setsCount - list.length, (_) => WorkoutSet()));
     } else if (_setsCount < list.length) {
       list.removeRange(_setsCount, list.length);
     }
@@ -126,14 +126,7 @@ class _TrainingSessionScreenState extends State<TrainingSessionScreen> {
       payload.add({
         'name': name,
         'idSource': ex['idSource']?.toString(),
-        'sets': sets
-            .map(
-              (s) => {
-                'reps': s.reps,
-                'weight': s.weight,
-              },
-            )
-            .toList(),
+        'sets': sets.map((s) => {'reps': s.reps, 'weight': s.weight}).toList(),
       });
     }
     return payload;
@@ -147,9 +140,7 @@ class _TrainingSessionScreenState extends State<TrainingSessionScreen> {
     final name = exercise['name']?.toString() ?? 'Ejercicio';
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Sesión de entrenamiento"),
-      ),
+      appBar: AppBar(title: const Text("Sesión de entrenamiento")),
       backgroundColor: isDark ? colorScheme.surface : Colors.white,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
@@ -262,10 +253,7 @@ class _SessionHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          routineName,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
+        Text(routineName, style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -358,12 +346,8 @@ class _SetRowState extends State<_SetRow> {
   @override
   void initState() {
     super.initState();
-    _weightCtrl = TextEditingController(
-      text: _formatWeight(widget.set.weight),
-    );
-    _repsCtrl = TextEditingController(
-      text: widget.set.reps?.toString() ?? '',
-    );
+    _weightCtrl = TextEditingController(text: _formatWeight(widget.set.weight));
+    _repsCtrl = TextEditingController(text: widget.set.reps?.toString() ?? '');
   }
 
   @override
@@ -396,11 +380,15 @@ class _SetRowState extends State<_SetRow> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colorScheme = Theme.of(context).colorScheme;
-    final rowBackground = isDark ? colorScheme.surfaceContainerHighest : Colors.white;
+    final rowBackground = isDark
+        ? colorScheme.surfaceContainerHighest
+        : Colors.white;
     final rowBorder = isDark
         ? colorScheme.outline.withOpacity(0.45)
         : const Color(0xFFD8DBE0);
-    final fieldBackground = isDark ? colorScheme.surface : const Color(0xFFF8F9FA);
+    final fieldBackground = isDark
+        ? colorScheme.surface
+        : const Color(0xFFF8F9FA);
     final fieldBorder = isDark
         ? colorScheme.outline.withOpacity(0.35)
         : const Color(0xFFCED3DA);
@@ -425,10 +413,10 @@ class _SetRowState extends State<_SetRow> {
           Expanded(
             child: TextField(
               controller: _weightCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                _WeightInputFormatter(),
-              ],
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [_WeightInputFormatter()],
               decoration: InputDecoration(
                 hintText: "Kg",
                 filled: true,
@@ -508,10 +496,7 @@ class WorkoutSet {
   final double? weight;
 
   WorkoutSet copyWith({int? reps, double? weight}) {
-    return WorkoutSet(
-      reps: reps ?? this.reps,
-      weight: weight ?? this.weight,
-    );
+    return WorkoutSet(reps: reps ?? this.reps, weight: weight ?? this.weight);
   }
 }
 
@@ -524,7 +509,6 @@ class _WeightInputFormatter extends TextInputFormatter {
     final text = newValue.text;
     if (text.isEmpty) return newValue;
 
-    // Allow digits plus only one decimal separator (comma or dot).
     final valid = RegExp(r'^\d*([.,]\d*)?$').hasMatch(text);
     return valid ? newValue : oldValue;
   }

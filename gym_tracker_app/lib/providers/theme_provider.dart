@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 const String _keyThemeMode = 'theme_mode';
 
-/// 0 = system, 1 = light, 2 = dark
 class ThemeNotifier extends ChangeNotifier {
   ThemeNotifier() {
     _load();

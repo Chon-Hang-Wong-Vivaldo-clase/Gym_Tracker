@@ -38,7 +38,7 @@ class _StreakWaterRingState extends State<StreakWaterRing>
   }
 
   Color _streakColor(int days) {
-    if (days <= 7) return const  Color(0xFF4CC9F0);
+    if (days <= 7) return const Color(0xFF4CC9F0);
     if (days <= 14) return const Color(0xFF45B6E9);
     if (days <= 21) return const Color(0xFF3EA3E2);
     if (days <= 28) return const Color(0xFF4895EF);
@@ -49,8 +49,8 @@ class _StreakWaterRingState extends State<StreakWaterRing>
     if (days <= 63) return const Color(0xFF3C26B6);
     if (days <= 70) return const Color(0xFF3A0CA3);
     if (days <= 77) return const Color(0xFF420CA6);
-    if (days <= 84) return const  Color(0xFF480CA8);
-    if (days <= 91) return const  Color(0xFF4F0DAB);
+    if (days <= 84) return const Color(0xFF480CA8);
+    if (days <= 91) return const Color(0xFF4F0DAB);
     if (days <= 98) return const Color(0xFF560BAD);
     if (days <= 105) return const Color(0xFF640AB1);
     if (days <= 112) return const Color(0xFF7209B7);
@@ -65,7 +65,9 @@ class _StreakWaterRingState extends State<StreakWaterRing>
     final progress = (widget.streakDays / widget.maxVisualDays).clamp(0.0, 1.0);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final centerColor = isDark ? const Color(0xFF616161) : const Color(0xFF9E9E9E);
+    final centerColor = isDark
+        ? const Color(0xFF616161)
+        : const Color(0xFF9E9E9E);
     final waterColor = _streakColor(widget.streakDays);
 
     return SizedBox(
@@ -74,10 +76,10 @@ class _StreakWaterRingState extends State<StreakWaterRing>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Contenedor circular exterior (borde) — visible en claro y oscuro
           Builder(
             builder: (context) {
-              final borderColor = Theme.of(context).brightness == Brightness.dark
+              final borderColor =
+                  Theme.of(context).brightness == Brightness.dark
                   ? Colors.white24
                   : Colors.black26;
               return Container(
@@ -91,7 +93,6 @@ class _StreakWaterRingState extends State<StreakWaterRing>
             },
           ),
 
-          // Agua dentro del círculo exterior
           ClipOval(
             child: AnimatedBuilder(
               animation: _ctrl,
@@ -108,7 +109,6 @@ class _StreakWaterRingState extends State<StreakWaterRing>
             ),
           ),
 
-          // Círculo central (encima del agua)
           Container(
             width: widget.size * 0.72,
             height: widget.size * 0.72,
@@ -164,8 +164,8 @@ class _WaterPainter extends CustomPainter {
     required this.color,
   });
 
-  final double progress; 
-  final double phase; 
+  final double progress;
+  final double phase;
   final Color color;
 
   @override
@@ -181,8 +181,7 @@ class _WaterPainter extends CustomPainter {
 
     final path1 = Path()..moveTo(0, waterY);
     for (double x = 0; x <= w; x++) {
-      final y = waterY +
-          sin((x / w * 2 * pi) + phase) * 10;
+      final y = waterY + sin((x / w * 2 * pi) + phase) * 10;
       path1.lineTo(x, y);
     }
     path1.lineTo(w, h);
@@ -196,8 +195,7 @@ class _WaterPainter extends CustomPainter {
 
     final path2 = Path()..moveTo(0, waterY);
     for (double x = 0; x <= w; x++) {
-      final y = waterY +
-          sin((x / w * 2 * pi) + phase + pi / 2) * 6; 
+      final y = waterY + sin((x / w * 2 * pi) + phase + pi / 2) * 6;
       path2.lineTo(x, y);
     }
     path2.lineTo(w, h);
