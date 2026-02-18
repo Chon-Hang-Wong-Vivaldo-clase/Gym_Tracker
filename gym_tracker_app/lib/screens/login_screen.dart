@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:gym_tracker_app/providers/auth_form_provider.dart';
 import 'package:gym_tracker_app/providers/app_auth_provider.dart';
 import 'package:gym_tracker_app/screens/register_email_screen.dart';
-import 'package:gym_tracker_app/screens/password_login_screen.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -43,28 +42,6 @@ class LoginScreen extends StatelessWidget {
       if (!context.mounted) return;
 
       if (res.cancelled) return;
-
-      if (res.email != null && res.route == "password") {
-        form.setEmail(res.email!);
-        form.passCtrl.clear();
-        form.pass2Ctrl.clear();
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const PasswordLoginScreen()),
-        );
-        return;
-      }
-
-      if (res.email != null) {
-        form.setEmail(res.email!);
-        if (!context.mounted) return;
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const RegisterEmailScreen()),
-        );
-        return;
-      }
 
       if (res.route == "home") {
         Navigator.pushReplacementNamed(context, 'shell');

@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -68,6 +65,16 @@ class DefaultFirebaseOptions {
     androidClientId: '759625472979-co1087akgn1b3f3lfstjepsuoqrprc4g.apps.googleusercontent.com',
     iosClientId: '759625472979-jsj1m5pnhqbmthmoar68sklihr1bsq46.apps.googleusercontent.com',
     iosBundleId: 'com.example.gymTrackerApp',
+  );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyD8AGbEjcrDk-UXZWnrM7MsShMlHTqAems',
+    appId: '1:759625472979:web:e1d7304f0e701a5f712d26',
+    messagingSenderId: '759625472979',
+    projectId: 'gymtracker-5404c',
+    authDomain: 'gymtracker-5404c.firebaseapp.com',
+    databaseURL: 'https://gymtracker-5404c-default-rtdb.europe-west1.firebasedatabase.app',
+    storageBucket: 'gymtracker-5404c.firebasestorage.app',
   );
 
 }

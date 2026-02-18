@@ -98,14 +98,21 @@ class _AppEndDrawerState extends State<AppEndDrawer> {
               const Spacer(),
               _LogoutButton(
                 onPressed: () async {
-                  await context.read<AppAuthProvider>().signOut();
-                  if (!context.mounted) return;
-                  Navigator.of(context).maybePop();
-                  Navigator.of(context, rootNavigator: true)
-                      .pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const AuthGate()),
-                        (_) => false,
-                      );
+                  try {
+                    await context.read<AppAuthProvider>().signOut();
+                    if (!context.mounted) return;
+                    Navigator.of(context).maybePop();
+                    Navigator.of(context, rootNavigator: true)
+                        .pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const AuthGate()),
+                          (_) => false,
+                        );
+                  } catch (e) {
+                    if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('No se pudo cerrar sesión: $e')),
+                    );
+                  }
                 },
               ),
             ],

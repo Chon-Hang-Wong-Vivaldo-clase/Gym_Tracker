@@ -21,8 +21,13 @@ class _WeekSwiperState extends State<WeekSwiper> {
   @override
   void initState() {
     super.initState();
-    _selected = _onlyDate(widget.initialDate ?? DateTime.now());
+    _selected = _onlyDate(DateTime.now());
     _days = _buildWeekCenteredOn(_selected);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.onDateSelected(_selected);
+      }
+    });
   }
 
   // Quita horas/min/seg para comparar bien
@@ -60,17 +65,12 @@ class _WeekSwiperState extends State<WeekSwiper> {
   Widget build(BuildContext context) {
     return SizedBox(
       height: 64,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _days.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, i) {
-          final day = _days[i];
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: _days.map((day) {
           final selected = _isSameDay(day, _selected);
           final theme = Theme.of(context);
           final onSurface = theme.colorScheme.onSurface;
-          final surface = theme.colorScheme.surface;
           final isDark = theme.brightness == Brightness.dark;
           final selectedBg = selected
               ? (isDark ? theme.colorScheme.surfaceContainerHighest : const Color(0xFF2B2E34))
@@ -79,15 +79,11 @@ class _WeekSwiperState extends State<WeekSwiper> {
               ? (isDark ? onSurface : Colors.white)
               : onSurface;
 
-          return InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              setState(() => _selected = day);
-              widget.onDateSelected(day);
-            },
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 3),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              width: 40,
+              width: 34,
               decoration: BoxDecoration(
                 color: selectedBg,
                 borderRadius: BorderRadius.circular(14),
@@ -117,7 +113,7 @@ class _WeekSwiperState extends State<WeekSwiper> {
               ),
             ),
           );
-        },
+        }).toList(),
       ),
     );
   }

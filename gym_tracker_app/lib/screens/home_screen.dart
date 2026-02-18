@@ -9,6 +9,13 @@ import 'package:gym_tracker_app/widgets/widgets.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
+  String _greetingByHour() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return "¡Buenos Días!";
+    if (hour < 20) return "¡Buenas Tardes!";
+    return "¡Buenas Noches!";
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AppAuthProvider>();
@@ -59,15 +66,13 @@ class HomeScreen extends StatelessWidget {
           children: [
             SizedBox(height: 20),
             Padding(
-              padding: EdgeInsets.fromLTRB(10, 0, 0, 10),
-              child: WeekSwiper(
-                onDateSelected: (_) {},
-              ),
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              child: WeekSwiper(onDateSelected: (_) {}),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(25, 0, 0, 10),
               child: Text(
-                "¡Buenos días!",
+                _greetingByHour(),
                 style: TextStyle(
                   fontSize: 22,
                   color: Theme.of(context).colorScheme.onSurface,
@@ -138,7 +143,10 @@ class _HomeStatsSection extends StatelessWidget {
           const SizedBox(height: 40),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: _MonthlyCalendar(streakDays: const <DateTime>{}, userUid: userUid),
+            child: _MonthlyCalendar(
+              streakDays: const <DateTime>{},
+              userUid: userUid,
+            ),
           ),
         ],
       );
@@ -149,12 +157,18 @@ class _HomeStatsSection extends StatelessWidget {
       builder: (context, snapshot) {
         final userData = snapshot.data?.snapshot.value as Map? ?? {};
         final statsRaw = userData['stats'];
-        final stats = statsRaw is Map ? Map<String, dynamic>.from(statsRaw) : <String, dynamic>{};
+        final stats = statsRaw is Map
+            ? Map<String, dynamic>.from(statsRaw)
+            : <String, dynamic>{};
         final profileRaw = userData['profile'];
-        final profile = profileRaw is Map ? Map<String, dynamic>.from(profileRaw) : <String, dynamic>{};
+        final profile = profileRaw is Map
+            ? Map<String, dynamic>.from(profileRaw)
+            : <String, dynamic>{};
 
         final trainedRaw = stats['trainedDays'];
-        final trainedMap = trainedRaw is Map ? trainedRaw : <dynamic, dynamic>{};
+        final trainedMap = trainedRaw is Map
+            ? trainedRaw
+            : <dynamic, dynamic>{};
         final days = trainedMap.keys
             .map((key) => _parseDateKey(key.toString()))
             .whereType<DateTime>()
@@ -224,9 +238,7 @@ class _StatsRow extends StatelessWidget {
     final restBg = isDark
         ? theme.colorScheme.surfaceContainerHigh
         : const Color(0xFFBDBDBD);
-    final cardTextColor = isDark
-        ? theme.colorScheme.onSurface
-        : Colors.white;
+    final cardTextColor = isDark ? theme.colorScheme.onSurface : Colors.white;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -284,7 +296,9 @@ DateTime? _parseDateKey(String value) {
 
 int _countCurrentMonthTrainedDays(Set<DateTime> trainedDays) {
   final today = DateTime.now();
-  return trainedDays.where((day) => day.year == today.year && day.month == today.month).length;
+  return trainedDays
+      .where((day) => day.year == today.year && day.month == today.month)
+      .length;
 }
 
 int _countCurrentMonthRestDays(Set<DateTime> trainedDays) {

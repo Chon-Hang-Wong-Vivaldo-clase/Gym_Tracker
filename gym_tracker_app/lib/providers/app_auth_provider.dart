@@ -116,29 +116,61 @@ class AppAuthProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  // GOOGLE LOGIN (sin crear cuenta si no existe)
+  // GOOGLE LOGIN
   Future<GoogleResult> signInWithGoogleCheck() async {
-    final googleUser = await GoogleSignIn().signIn();
-    if (googleUser == null) return GoogleResult.cancelled();
-
-    final email = googleUser.email.trim();
     try {
-      final existsInDb = await profileExistsByEmail(email);
-      await GoogleSignIn().signOut();
+      UserCredential userCred;
 
-      if (!existsInDb) {
-        return GoogleResult.needsRegister(email);
+      if (kIsWeb) {
+        userCred = await _auth.signInWithPopup(GoogleAuthProvider());
+      } else {
+        final googleSignIn = GoogleSignIn();
+        final googleUser = await googleSignIn.signIn();
+        if (googleUser == null) return GoogleResult.cancelled();
+
+        final googleAuth = await googleUser.authentication;
+        final hasToken =
+            (googleAuth.accessToken != null && googleAuth.accessToken!.isNotEmpty) ||
+            (googleAuth.idToken != null && googleAuth.idToken!.isNotEmpty);
+        if (!hasToken) {
+          throw FirebaseAuthException(
+            code: 'google-auth-missing-token',
+            message: 'Google no devolvio tokens de autenticacion.',
+          );
+        }
+
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCred = await _auth.signInWithCredential(credential);
       }
-      return GoogleResult.needsPassword(email);
+
+      final uid = userCred.user?.uid;
+      if (uid == null) return GoogleResult.cancelled();
+
+      final exists = await profileExists(uid);
+      return GoogleResult.success(exists ? "home" : "completeProfile");
     } on FirebaseAuthException {
-      await GoogleSignIn().signOut();
       rethrow;
     }
   }
 
   Future<void> signOut() async {
-    await _setOffline();
-    await GoogleSignIn().signOut();
+    try {
+      await _setOffline();
+    } catch (_) {
+      // Presence is best-effort; do not block logout.
+    }
+
+    if (!kIsWeb) {
+      try {
+        await GoogleSignIn().signOut();
+      } catch (_) {
+        // Ignore provider-specific sign-out failures.
+      }
+    }
+
     await _auth.signOut();
     notifyListeners();
   }
